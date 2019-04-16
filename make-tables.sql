@@ -7,7 +7,7 @@ drop table if exists posts;  -- allows us to source the batch file more than onc
 CREATE TABLE users (
     name varchar(30),
     uid int auto_increment,
-    hashedPW varchar(50), -- what is the space we should alot here?
+    hashedPW char(60),
     isAdmin enum('0', '1'),
     primary key (uid)
 )
@@ -18,7 +18,7 @@ ENGINE = InnoDB;
 CREATE TABLE courses (
     name varchar(30),
     cid int auto_increment,
-    semester varchar(3), -- ie F19, S19
+    semester char(3), -- ie F19, S19
     primary key (cid)
 )
 -- table constraints follow
