@@ -7,7 +7,7 @@ drop table if exists posts;  -- allows us to source the batch file more than onc
 CREATE TABLE users (
     name varchar(30),
     uid int auto_increment,
-    hashedPW char(60), -- what is the space we should alot here?
+    hashedPW char(60),
     isAdmin enum('0', '1'),
     primary key (uid)
 )

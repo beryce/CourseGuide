@@ -6,16 +6,16 @@
       <title>Wendy’s Course Survival Guide</title>
   </head>
   <body>
-      
+    
+    {% block links%}
+    
+    {% endblock %}
+    
     {% block search %}
     <form id="search" method=POST action="/search">
         <input id="searchterm" placeholder="Search" name="searchterm">
         <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
     </form>
-    {% endblock %}
-    
-    {% block links%}
-    
     {% endblock %}
     
     <div id="content">

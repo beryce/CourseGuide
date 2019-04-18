@@ -7,27 +7,33 @@
       <title>Wendy’s Course Survival Guide</title>
   </head>
   <body>
-      
-{% block search %}
-{% endblock %}
+    
+    {% block flashes %}
+    {% endblock %}
+    
+    {% block links %}
+        <h1>Welcome!</h1>
 
-{% block flashes %}
-{% endblock %}
+        <div id="login">
+            <h1>Log or Create Account</h1>
+            <form action="/login" method="POST">
+              <p><label>Username:</label>
+              <input type="text" name="username" placeholder="username"></p>
+              <p><label>Password:</label>
+              <input type="text" name="password" placeholder="password"></p>
+              <p><label>If you are an admin logging in, enter the admin password:</label>
+              <input type="text" name="adminPW" placeholder="admin password"></p>
+              <button id="submit" type="submit" name="submit" value="submit">Submit</button>
+            </form></p>
+        </div>
+        
+        <p>Use the search bar below to search for a course</p> 
+        
+        <p>Alternatively, click here for <a href="/">All Courses</a>.</p>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    {% endblock %}
 
-Log or Create Account
-
-
-{% block links %}
-    <h1>Welcome!</h1>
-
-    <p>Use the search bar above to search for a course</p> 
-    <p>or</p> 
-    <p>click here for <a href="/movies">all movies</a>.</p>
-    <p>click here for <a href="/movies/harry">all "harry" movies</a>.</p>
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-
-{% endblock %}
-
-</body>
+  </body>
 </html>
