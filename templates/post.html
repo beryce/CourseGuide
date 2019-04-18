@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block search %}
+{% endblock %}
+
+{% block flashes %}
+{% endblock %}
+
+Log or Create Account
+
+*display posts for a specific course*
+
+*users can create a new post, update a previous post, and delete a previous post*
+<form id="userPost" method=POST action="/createPost">
+    <label class="class-rating">1
+            <input type="radio" name="stars" value="1"></label>
+        
+        <label class="class-rating">2
+            <input type="radio" name="stars" value="2"></label>
+        
+        <label class="class-rating">3
+            <input type="radio" name="stars" value="3"></label>
+        
+        <label class="class-rating">4
+            <input type="radio" name="stars" value="4"></label>
+        
+        <label class="class-rating">5
+            <input type="radio" name="stars" value="5"></label>
+    <input id="reviewText" placeholder="Write a review here..." name="reviewText">
+    <button id="updatePost" type="submit" name="submit" value="updatePost">UpdatePost</button>
+</form>
+
+*display other users' posts about the course*
+
+</body>
+</html>

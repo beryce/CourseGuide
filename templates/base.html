@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang='en'>
+  <head>
+      <meta charset='utf-8'>
+      <meta name=author content="Jennifer Chien, Ngina Kariuki, Beryce Garcia">
+      <title>Wendy’s Course Survival Guide</title>
+  </head>
+  <body>
+      
+    {% block search %}
+    <form id="search" method=POST action="/search">
+        <input id="searchterm" placeholder="Search" name="searchterm">
+        <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
+    </form>
+    {% endblock %}
+    
+    {% block links%}
+    
+    {% endblock %}
+    
+    <div id="content">
+      {% block flashes %}
+        <div id="flashes">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+            <div id="messages">
+            {% for msg in messages %}
+                <p>{{msg}}</p>
+            {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+          
+        </div>
+        {% endblock %}
+    </div>
+  
+  </body>
+</html>
