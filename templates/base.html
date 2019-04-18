@@ -3,7 +3,9 @@
   <head>
       <meta charset='utf-8'>
       <meta name=author content="Jennifer Chien, Ngina Kariuki, Beryce Garcia">
+      {% block title %}
       <title>Wendy’s Course Survival Guide</title>
+      {% endblock %}
   </head>
   <body>
     
@@ -34,6 +36,9 @@
         </div>
         {% endblock %}
     </div>
+    
+    {% block courseList %}
+    {% endblock %}
   
   </body>
 </html>

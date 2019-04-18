@@ -25,9 +25,9 @@ def login():
     #create the login -- if the username is already taken, then search the database
     #for a matching username and hashed password
     try:
-        username = request.form['username']
-        pw = request.form['password']
-        adminPW = request.form['adminPW']
+        username = request.form.get('username')
+        pw = request.form.get('password')
+        adminPW = request.form.get('adminPW')
         hashed = bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt())
         # FOR NOW: global admin password == 'admin'
         isAdmin = 0
@@ -70,10 +70,13 @@ def createAccount():
 def search():
     # search for courses
     # redirects to post.html
-    # return redirect(url_for('movieKeywordPage', keyword=keyword))
-    return render_template('search.html')
+    conn = courseBrowser.getConn('c9')
+    if (request.method == 'POST'):
+        searchterm = request.form.get('searchterm')
+    courses = courseBrowser.getSearchResults(conn, searchterm)
+    return render_template('search.html', courses = courses)
     
-@app.route('/createPost', methods=['POST'])
+@app.route('/createPost/', methods=['POST'])
 def createPost():
     if (request.method == 'POST'):
         session['uid'] = request.form['uid']
