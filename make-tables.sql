@@ -24,6 +24,7 @@ CREATE TABLE courses (
 -- table constraints follow
 ENGINE = InnoDB;
 
+-- needs reference to class and semester that post refers to?
 CREATE TABLE posts (
     pid int auto_increment,
     rating enum('1', '2', '3', '4', '5'),

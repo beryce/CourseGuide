@@ -2,6 +2,7 @@ import sys
 import MySQLdb
 
 def getConn(db):
+    """Function to connect to the passed-in database."""
     conn = MySQLdb.connect(host='localhost',
                            user='ubuntu',
                            passwd='',
@@ -30,7 +31,9 @@ def getUser(conn, username, hashedPW, isAdmin):
     return userDict
 
 def getSearchResults(conn, input_search):
-    """Returns the search results with the given input user types into search bar."""
+    """Returns the search results with the given input user types into search bar.
+    For example, if the user types in "cs", the result will be all classes where
+    there is a "cs" in the course name."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     term = '%' + input_search + '%'
     curs.execute('select name, cid, semester from courses where name like %s', [term])

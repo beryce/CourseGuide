@@ -67,26 +67,30 @@ def createAccount():
 
 @app.route('/search', methods=['GET','POST'])
 def search():
-    # search for courses
-    # redirects to post.html
+    """Function for the search bar in the webpage. Displays results
+    similar to the input that user typed into the search bar."""
     conn = courseBrowser.getConn('c9')
     if (request.method == 'POST'):
         searchterm = request.form.get('searchterm')
     else:
         searchterm = request.args.get('searchterm')
     
+    # changing the searchterm to be an empty string just in case the result
+    # turns out to be None --could probably be improved
     if searchterm is None:
         searchterm = ""
         
     courses = courseBrowser.getSearchResults(conn, searchterm)
     return render_template('search.html', courses = courses)
     
-@app.route('/createPost', methods=['GET', 'POST'])
-def createPost():
+@app.route('/createPost/<courseAndSemester>', methods=['GET', 'POST'])
+def createPost(courseAndSemester):
+    #courseAndSemester formatted like this: ECON102-F17
     if (request.method == 'POST'):
         session['uid'] = request.form['uid']
     #return redirect(request.referrer)
-    return render_template('post.html')
+    
+    return render_template('post.html', courseAndSemester = courseAndSemester)
 
 #necessary?  
 @app.route('/updatePost', methods=['POST'])

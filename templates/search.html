@@ -21,9 +21,8 @@
 
 
     {%for class in courses%}
-    <!--currently goes back to the home page because post related routes not implemented yet-->
     <tr data-cid={{ class.cid }}>
-        <td class="search_class_name"><a href = {{ url_for('createPost') }}>{{ class.name }}</a></td>
+        <td class="search_class_name"><a href = {{ url_for('createPost', courseAndSemester = class.name + "-" + class.semester) }}>{{ class.name }}</a></td>
         <td class="search_class_semester">{{ class.semester }}</td>
     </tr>
     {% endfor %}
