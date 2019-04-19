@@ -22,7 +22,7 @@
 
     {%for class in courses%}
     <tr data-cid={{ class.cid }}>
-        <td class="search_class_name"><a href = {{ url_for('createPost', courseAndSemester = class.name + "-" + class.semester) }}>{{ class.name }}</a></td>
+        <td class="search_class_name"><a href = {{ url_for('createPost', cid = class.cid) }}>{{ class.name }}</a></td>
         <td class="search_class_semester">{{ class.semester }}</td>
     </tr>
     {% endfor %}

@@ -83,14 +83,17 @@ def search():
     courses = courseBrowser.getSearchResults(conn, searchterm)
     return render_template('search.html', courses = courses)
     
-@app.route('/createPost/<courseAndSemester>', methods=['GET', 'POST'])
-def createPost(courseAndSemester):
+@app.route('/createPost/<cid>', methods=['GET', 'POST'])
+def createPost(cid):
     #courseAndSemester formatted like this: ECON102-F17
+    conn = courseBrowser.getConn('c9')
     if (request.method == 'POST'):
         session['uid'] = request.form['uid']
+    # print("course: " + course)
+    # print("semester: " + semester)
     #return redirect(request.referrer)
-    
-    return render_template('post.html', courseAndSemester = courseAndSemester)
+    courseInfo = courseBrowser.getInfoAboutCourse(conn, cid)
+    return render_template('post.html', course = courseInfo)
 
 #necessary?  
 @app.route('/updatePost', methods=['POST'])

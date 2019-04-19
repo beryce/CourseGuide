@@ -11,9 +11,18 @@ def getConn(db):
     return conn
     
 def getCoursesWithTitle(conn, title):
+    """Gets information about ALL courses with similar name."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('''select * from courses where title like %s''', ['%' + title + '%'])
+    curs.execute('''select * from courses where name like %s''', ['%' + title + '%'])
     return curs.fetchall()
+
+def getInfoAboutCourse(conn, cid):
+    """Gets information about a PARTICULAR couse."""
+    #BUG: NEED TO INNER JOIN WITH POSTS BUT POSTS IS BEING WEIRD
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    # curs.execute('''select * from courses where cid = %s''', [cid])
+    curs.execute('''select * from courses where courses.cid = %s''', [cid])
+    return curs.fetchone()
     
 def getUser(conn, username, hashedPW, isAdmin):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
