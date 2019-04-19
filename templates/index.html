@@ -5,13 +5,14 @@
       <meta charset='utf-8'>
       <meta name=author content="Jennifer Chien, Ngina Kariuki, Beryce Garcia">
       <title>Wendy’s Course Survival Guide</title>
+      <link rel="stylesheet" type="text/css" href="../static/style.css">
   </head>
   <body>
     
     {% block flashes %}
     {% endblock %}
     
-    {% block links %}
+    {% block login %}
         <h1>Welcome!</h1>
 
         <div id="login">
@@ -28,12 +29,15 @@
         </div>
         
         <p>Use the search bar below to search for a course</p> 
+    {% endblock %}
         
+    {% block links %}
         <p>Alternatively, click here for <a href = "/search">All Courses</a>.</p>
+    {% endblock %}
     
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     
-    {% endblock %}
+    
 
   </body>
 </html>

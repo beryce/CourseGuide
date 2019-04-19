@@ -3,7 +3,7 @@
 {% block title %}
 <h2>Search Results</h2>
 {% endblock %}
-
+<body>
 {% block flashes %}
 {% endblock %}
 
@@ -28,7 +28,15 @@
     </tr>
     {% endfor %}
 </table>
+
+
 {% endblock %}
+
+{% block backToHome %}
+<a href={{ url_for('homePage') }}>Go Back to Home</a>
+{% endblock %}
+
+
 
 </body>
 </html>

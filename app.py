@@ -58,7 +58,6 @@ def login():
     # update the database by creating a new user with that login and password information
     
     
-    
     return render_template('index.html') 
    
 @app.route('/createAccount', methods=['POST'])
@@ -66,21 +65,28 @@ def createAccount():
     return render_template('index.html')
     
 
-@app.route('/search', methods=['POST'])
+@app.route('/search', methods=['GET','POST'])
 def search():
     # search for courses
     # redirects to post.html
     conn = courseBrowser.getConn('c9')
     if (request.method == 'POST'):
         searchterm = request.form.get('searchterm')
+    else:
+        searchterm = request.args.get('searchterm')
+    
+    if searchterm is None:
+        searchterm = ""
+        
     courses = courseBrowser.getSearchResults(conn, searchterm)
     return render_template('search.html', courses = courses)
     
-@app.route('/createPost/', methods=['POST'])
+@app.route('/createPost', methods=['GET', 'POST'])
 def createPost():
     if (request.method == 'POST'):
         session['uid'] = request.form['uid']
-    return redirect(request.referrer)
+    #return redirect(request.referrer)
+    return render_template('post.html')
 
 #necessary?  
 @app.route('/updatePost', methods=['POST'])
@@ -102,4 +108,4 @@ def insertCourse():
 #we need a main init function
 if __name__ == '__main__':
     app.debug = True
-    app.run('0.0.0.0', 8082)
+    app.run('0.0.0.0', 8081)
