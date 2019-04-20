@@ -1,5 +1,6 @@
 import sys
 import MySQLdb
+import bcrypt
 
 def getConn(db):
     """Function to connect to the passed-in database."""
@@ -24,19 +25,28 @@ def getInfoAboutCourse(conn, cid):
     curs.execute('''select * from courses where courses.cid = %s''', [cid])
     return curs.fetchone()
     
-def getUser(conn, username, hashedPW, isAdmin):
+def getUser(conn, username, pw, isAdmin):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('''select * from users where name = %s''', [username])
     userDict = curs.fetchone()
-    if userDict['hashedPW'] == hashedPW:
-        userDict["response"] = 0
-    if userDict['hashedPW'] != hashedPW:
-        userDict["response"] = 1
-    if userDict is None:
+    print("searching for user in the database...")
+    print(userDict)
+    if userDict is not None:
+        hashedPW = bcrypt.hashpw(pw.encode('utf-8'), userDict['hashedPW'].encode('utf-8'))
+        if userDict['hashedPW'] == hashedPW:
+            print("courseBrowser part 1")
+            userDict['response'] = 0
+        if userDict['hashedPW'] != hashedPW:
+            print("courseBrowser part 2")
+            userDict['response'] = 1
+        return userDict
+    else:
+        hashedPW = bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt())
+        print("attempting to insert new user into the database...")
         curs.execute('''insert into users (name, hashedPW, isAdmin) values (%s, %s, %s)''', [username, hashedPW, isAdmin])
         curs.execute('''select * from users where name = %s''', [username])
         userDict = curs.fetchone()
-        userDict["response"] = 2
+        userDict['response'] = 2
     return userDict
 
 def getSearchResults(conn, input_search):
