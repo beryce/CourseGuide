@@ -1,5 +1,9 @@
 # cs304FinalProj
 
-editing this to see if it works -- jennifer
-
-change by Beryce
+### Setting up test files
+- source venv/bin/activate
+- start mysql server, mysql-ctl start
+- run mysql --local-infile
+- source make-tables.sql
+- source load-courses-data.sql
+- to see added data, select * courses
