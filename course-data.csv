@@ -1,4 +1,4 @@
-name,semester
-ECON101,F18
-CS111,F18
-ENG115,F18
+name,cid,semester,avg_rating,avg_hours
+ECON101,1,F18,0,0
+CS111,2,F18,0,0
+ENG115,3,F18,0,0
