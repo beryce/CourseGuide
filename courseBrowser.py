@@ -33,13 +33,18 @@ def getUser(conn, username, pw, isAdmin):
     print(userDict)
     if userDict is not None:
         hashedPW = bcrypt.hashpw(pw.encode('utf-8'), userDict['hashedPW'].encode('utf-8'))
+        # user and password match what is in the database
         if userDict['hashedPW'] == hashedPW:
-            print("courseBrowser part 1")
             userDict['response'] = 0
+            # if the user exists but now they have the admin password (or did not enter an admin password), 
+            # then update their admin information in the database
+            curs.execute('''update users set isAdmin = %s where uid = %s''', [isAdmin, userDict['uid']]);
+            curs.fetchone() # <------------------------ necessary????
+        # user exists but password does not match
         if userDict['hashedPW'] != hashedPW:
-            print("courseBrowser part 2")
             userDict['response'] = 1
         return userDict
+    # username does not exist in the database, create new user
     else:
         hashedPW = bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt())
         print("attempting to insert new user into the database...")
@@ -47,6 +52,7 @@ def getUser(conn, username, pw, isAdmin):
         curs.execute('''select * from users where name = %s''', [username])
         userDict = curs.fetchone()
         userDict['response'] = 2
+    print (userDict)
     return userDict
 
 def getSearchResults(conn, input_search):

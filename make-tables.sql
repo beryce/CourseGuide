@@ -30,6 +30,7 @@ ENGINE = InnoDB;
 CREATE TABLE posts (
     pid int auto_increment,
     rating enum('1', '2', '3', '4', '5'),
+    comments varchar(1000),
     hours int not null,
     uid int not null,
     cid int not null,
