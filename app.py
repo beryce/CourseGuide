@@ -110,10 +110,12 @@ def insertCourse():
     # print(session['uid']) ask scott for help
     uid = session.get('uid', False)
     
+    # ensure that user is log in before they add a course
     if not uid:
         flash("Sorry, you have to log in first.")
         return redirect(url_for('homePage'))
     else:
+        # grab name and semester from form
         name = request.form.get("newcoursename")
         semester = request.form.get("newsemester")
         courseBrowser.insertCourse(conn, name, semester)
