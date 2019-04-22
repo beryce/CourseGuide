@@ -125,6 +125,23 @@ def insertCourse():
         courseBrowser.insertCourse(conn, name, semester)
         flash("Course added!")
         return redirect(url_for("search"))
+      
+@app.route('/ratePost/', methods=['POST'])   
+def ratePost():
+    if 'uid' in session:
+        conn = courseBrowser.getConn('c9')
+        uid = session['uid']
+        cid = request.form.get('cid')
+        rating = request.form.get('stars')
+        hours = request.form.get('fname')
+        comments = request.form.get('comment')
+        if courseBrowser.rate_post(conn, uid, cid, rating, hours, comments):
+            flash('Updated post.')
+        else:
+            flash("Error")
+    else:
+        flash('You need to login!')
+    return redirect(request.referrer) 
     
 #we need a main init function
 if __name__ == '__main__':

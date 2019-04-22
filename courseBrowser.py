@@ -72,3 +72,19 @@ def getSearchResults(conn, input_search):
     term = '%' + input_search + '%'
     curs.execute('select name, cid, semester from courses where name like %s', [term])
     return curs.fetchall()
+    
+def rate_post(conn, uid, cid, rating, hours, comments): 
+    '''insert or update the user's rating of a course'''
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    if post_exists(conn, uid, cid):
+        curs.execute('update posts set rating=%s,hours=%s,comments=%s where uid=%s and cid=%s',(rating,hours,comments,uid,cid))
+    else:
+        curs.execute('insert into posts(uid, cid, rating, comments, hours) values (%s, %s, %s, %s, %s)',(uid,cid,rating,comments,hours))
+        return True
+    return False    
+    
+def post_exists(conn, uid, cid):
+    ''''check to see if user has already made a post about a given course'''
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('select * from posts where uid=%s and cid=%s',(uid,cid))
+    return curs.fetchone()
