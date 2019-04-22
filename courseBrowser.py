@@ -80,8 +80,7 @@ def rate_post(conn, uid, cid, rating, hours, comments):
         curs.execute('update posts set rating=%s,hours=%s,comments=%s where uid=%s and cid=%s',(rating,hours,comments,uid,cid))
     else:
         curs.execute('insert into posts(uid, cid, rating, comments, hours) values (%s, %s, %s, %s, %s)',(uid,cid,rating,comments,hours))
-        return True
-    return False    
+    return True    
     
 def post_exists(conn, uid, cid):
     ''''check to see if user has already made a post about a given course'''
