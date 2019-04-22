@@ -17,6 +17,13 @@ def getCoursesWithTitle(conn, title):
     curs.execute('''select * from courses where name like %s''', ['%' + title + '%'])
     return curs.fetchall()
 
+def insertCourse(conn, name, semester):
+    """Inserts a new course with given name and semester into course database."""
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    #curs.execute('insert into rating_table2(pid, movie_id, rating) values (%s, %s, %s) on duplicate key update pid = %s, rating = %s', (input_tt, person_id, input_rating))
+    curs.execute('insert into courses(name, semester) values (%s, %s) on duplicate key update name = %s, semester = %s', 
+                (name, semester, name, semester))
+
 def getInfoAboutCourse(conn, cid):
     """Gets information about a PARTICULAR couse."""
     #BUG: NEED TO INNER JOIN WITH POSTS BUT POSTS IS BEING WEIRD

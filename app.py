@@ -25,6 +25,7 @@ def login():
     """Function for the main log in page."""
     #create the login -- if the username is already taken, then search the database
     #for a matching username and hashed password
+    conn = courseBrowser.getConn('c9')
     username = request.form.get('username')
     pw = request.form.get('password')
     adminPW = request.form.get('adminPW')
@@ -92,9 +93,6 @@ def createPost(cid):
     # connect to database 
     conn = courseBrowser.getConn('c9')
     
-    # grab arguments
-    if (request.method == 'POST'):
-        session['uid'] = request.form['uid']
     # print("course: " + course)
     # print("semester: " + semester)
     #return redirect(request.referrer)
@@ -103,10 +101,24 @@ def createPost(cid):
     courseInfo = courseBrowser.getInfoAboutCourse(conn, cid)
     return render_template('post.html', course = courseInfo)
     
-@app.route('/insertCourse')
+@app.route('/insertCourse', methods = ["POST"])
 def insertCourse():
-    """NOT YET IMPLEMENTED"""
-    return redirect(request.referrer)
+    """Inserts a new course into the database and displays it on webpage"""
+    conn = courseBrowser.getConn('c9')
+    
+    # print("session")
+    # print(session['uid']) ask scott for help
+    uid = session.get('uid', False)
+    
+    if not uid:
+        flash("Sorry, you have to log in first.")
+        return redirect(url_for('homePage'))
+    else:
+        name = request.form.get("newcoursename")
+        semester = request.form.get("newsemester")
+        courseBrowser.insertCourse(conn, name, semester)
+        flash("Course added!")
+        return redirect(url_for("search"))
     
 #we need a main init function
 if __name__ == '__main__':
