@@ -96,10 +96,14 @@ def createPost(cid):
     # print("course: " + course)
     # print("semester: " + semester)
     #return redirect(request.referrer)
-    
-    # get information about particular course
-    courseInfo = courseBrowser.getInfoAboutCourse(conn, cid)
-    return render_template('post.html', course = courseInfo)
+    uid = session.get('uid', False)
+    if not uid:
+        flash("Sorry, you have to log in before writing a review.")
+        return redirect(url_for('homePage'))
+    else:
+        # get information about particular course
+        courseInfo = courseBrowser.getInfoAboutCourse(conn, cid)
+        return render_template('post.html', course = courseInfo)
     
 @app.route('/insertCourse', methods = ["POST"])
 def insertCourse():
@@ -112,7 +116,7 @@ def insertCourse():
     
     # ensure that user is log in before they add a course
     if not uid:
-        flash("Sorry, you have to log in first.")
+        flash("Sorry, you have to log in first before adding a course.")
         return redirect(url_for('homePage'))
     else:
         # grab name and semester from form
