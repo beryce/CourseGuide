@@ -26,6 +26,8 @@ def getInfoAboutCourse(conn, cid):
     return curs.fetchone()
     
 def getUser(conn, username, pw, isAdmin):
+    """Gets information about a particular user. Checks to see if the password 
+    is a match and whether or not they are an admin."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('''select * from users where name = %s''', [username])
     userDict = curs.fetchone()

@@ -22,6 +22,7 @@ def homePage():
  
 @app.route('/login', methods=['POST'])
 def login():
+    """Function for the main log in page."""
     #create the login -- if the username is already taken, then search the database
     #for a matching username and hashed password
     username = request.form.get('username')
@@ -57,14 +58,17 @@ def login():
    
 @app.route('/createAccount', methods=['POST'])
 def createAccount():
+    """NOT YET IMPLEMENTED"""
     return render_template('index.html')
-    
 
 @app.route('/search', methods=['GET','POST'])
 def search():
     """Function for the search bar in the webpage. Displays results
     similar to the input that user typed into the search bar."""
+    # connect to database
     conn = courseBrowser.getConn('c9')
+    
+    # grab the arguments
     if (request.method == 'POST'):
         searchterm = request.form.get('searchterm')
     else:
@@ -74,24 +78,34 @@ def search():
     # turns out to be None --could probably be improved
     if searchterm is None:
         searchterm = ""
-        
+    
+    # get the results 
     courses = courseBrowser.getSearchResults(conn, searchterm)
     return render_template('search.html', courses = courses)
     
 @app.route('/createPost/<cid>', methods=['GET', 'POST'])
 def createPost(cid):
+    """Function that redirects to the review page and allows users to create a 
+    review for a particular course"""
     #courseAndSemester formatted like this: ECON102-F17
+    
+    # connect to database 
     conn = courseBrowser.getConn('c9')
+    
+    # grab arguments
     if (request.method == 'POST'):
         session['uid'] = request.form['uid']
     # print("course: " + course)
     # print("semester: " + semester)
     #return redirect(request.referrer)
+    
+    # get information about particular course
     courseInfo = courseBrowser.getInfoAboutCourse(conn, cid)
     return render_template('post.html', course = courseInfo)
     
 @app.route('/insertCourse')
 def insertCourse():
+    """NOT YET IMPLEMENTED"""
     return redirect(request.referrer)
     
 #we need a main init function
