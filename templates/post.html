@@ -6,11 +6,11 @@
 
     {% block posts %}
         <h1>Showing Results For: {{ course.name }} ({{ course.semester }})</h1>
-        <h2>Overall rating: </h2>
-        <h2>Avg number of hours spent: </h2>
+        <h2>Overall rating: {{course.avg_rating}}</h2>
+        <h2>Avg number of hours spent: {{course.avg_hours}}</h2>
         <h3>Write a review</h3>
         
-        <td><form id="rating" method="post" action="{{url_for('ratePost')}}">
+        <td><form id="rating" method="post" action="{{url_for('rateCourse')}}">
             <p>How would you rate this class on a scale of 1 (poor) to 5 (excellent)?</p>
             <input type="hidden" name="cid" value="{{course.cid}}">
             

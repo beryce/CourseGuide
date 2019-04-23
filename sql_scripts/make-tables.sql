@@ -20,8 +20,8 @@ CREATE TABLE courses (
     name varchar(30),
     cid int auto_increment,
     semester char(3), -- ie F19, S19
-    avg_rating int,
-    avg_hours int,
+    avg_rating float, --changed to float
+    avg_hours float,
     primary key (cid)
 )
 -- table constraints follow
@@ -31,7 +31,7 @@ CREATE TABLE posts (
     pid int auto_increment,
     rating enum('1', '2', '3', '4', '5'),
     comments varchar(1000),
-    hours int not null,
+    hours float not null, 
     uid int not null,
     cid int not null,
     

@@ -126,8 +126,9 @@ def insertCourse():
         flash("Course added!")
         return redirect(url_for("search"))
       
-@app.route('/ratePost/', methods=['POST'])   
-def ratePost():
+@app.route('/rateCourse/', methods=['POST'])   
+def rateCourse():
+    """rate a selected course and update average rating and hours"""
     if 'uid' in session:
         conn = courseBrowser.getConn('c9')
         uid = session['uid']
@@ -135,8 +136,15 @@ def ratePost():
         rating = request.form.get('stars')
         hours = request.form.get('fname')
         comments = request.form.get('comment')
-        if courseBrowser.rate_post(conn, uid, cid, rating, hours, comments):
-            flash('Updated post.')
+        if courseBrowser.rate_course(conn, uid, cid, rating, hours, comments):
+            # print out new average ratings and hours
+            avg_rating = courseBrowser.compute_avgrating(conn, cid)
+            avg_hours = courseBrowser.compute_avghours(conn, cid)
+            
+            # update average ratings and hours
+            courseBrowser.update_avgrating(conn, cid)
+            courseBrowser.update_avghours(conn, cid)
+            flash('The new average rating is {} and the new average hours are {}.'.format(avg_rating, avg_hours))
         else:
             flash("Error")
     else:
@@ -146,4 +154,4 @@ def ratePost():
 #we need a main init function
 if __name__ == '__main__':
     app.debug = True
-    app.run('0.0.0.0', 8081)
+    app.run('0.0.0.0', 8080)
