@@ -2,7 +2,8 @@
 This is the final project for CS304: Databases and Web Interfaces at Wellesley College. This is a web application that allows students to create reviews about particular classes and professors, in addition to accessing reviews other students have made.
 
 #### Folders
-- 
+- __sql_scripts:__ all sql files
+- __templates:___ contains all htmls
 
 #### Setting up test files
 1. source venv/bin/activate
