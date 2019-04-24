@@ -3,7 +3,7 @@ This is the final project for CS304: Databases and Web Interfaces at Wellesley C
 
 #### Folders
 - __sql_scripts:__ all sql files
-- __templates:___ contains all htmls
+- __templates:__ contains all htmls
 
 #### Setting up test files
 1. source venv/bin/activate
