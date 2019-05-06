@@ -101,7 +101,7 @@ def createPost(cid):
     else:
         # get information about particular course
         courseInfo = courseBrowser.getInfoAboutCourse(conn, cid)
-        pastComments = courseBrowser.get_past_comments(conn, cid)
+        pastComments = courseBrowser.get_past_comments(conn, cid, uid)
         return render_template('post.html', course = courseInfo, rows = pastComments)
     
 @app.route('/insertCourse', methods = ["POST"])

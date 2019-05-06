@@ -58,7 +58,7 @@
     {% block past_posts %}
     <dl>
         {% for row in rows %}
-            <dt>Anonymous at {{row.entered}}</dt>
+            <dt>{{row.name}} at {{row.entered}}</dt>
             <dd>
                 <li>Rating: {{row.rating}}</li>
                 <li>Hours spent: {{row.hours}}</li>

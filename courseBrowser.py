@@ -117,11 +117,11 @@ def update_avghours(conn, cid):
     curs.execute('update courses set avg_hours=%s where cid=%s',(avghours, cid))
     return curs.fetchall()
     
-def get_past_comments(conn, cid):
+def get_past_comments(conn, cid, uid):
     '''Show the rating, time stamp, comments, and hours other people entered in the past 
     for a particular course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select entered, rating, comments, hours from posts where cid=%s', (cid))
+    curs.execute('select name, entered, rating, comments, hours from posts inner join users where cid = %s and posts.uid = users.uid', (cid))
     return curs.fetchall()
     
     
