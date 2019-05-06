@@ -51,7 +51,6 @@
         <h2>Other reviews for this class</h2>
     {% endblock %}
 
-
     {% block backToHome %}
         <a href={{ url_for('homePage') }}>Go Back to Home</a>
     {% endblock %}
@@ -59,7 +58,12 @@
     {% block past_posts %}
     <dl>
         {% for row in rows %}
-            <dt>Anonymous at {{row.time}}</dt><dd>{{row.entry}}</dd>
+            <dt>Anonymous at {{row.entered}}</dt>
+            <dd>
+                <li>Rating: {{row.rating}}</li>
+                <li>Hours spent: {{row.hours}}</li>
+                <li>Coment: {{row.comments}}</li>
+            </dd>
         {% endfor %}
     </dl>
     {% endblock %}

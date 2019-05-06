@@ -22,10 +22,7 @@ def getCoursesWithTitle(conn, title):
 def insertCourse(conn, name, semester):
     """Inserts a new course with given name and semester into course database."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-<<<<<<< Updated upstream
     lock.acquire()
-=======
->>>>>>> Stashed changes
     curs.execute('insert into courses(name, semester) values (%s, %s) on duplicate key update name = %s, semester = %s', 
                 (name, semester, name, semester))
     lock.release()
@@ -121,10 +118,10 @@ def update_avghours(conn, cid):
     return curs.fetchall()
     
 def get_past_comments(conn, cid):
-    '''Show the rating, comments, and hours other people entered in the past 
+    '''Show the rating, time stamp, comments, and hours other people entered in the past 
     for a particular course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select rating, comments, hours from posts')
-    return curs.fetchone()
+    curs.execute('select entered, rating, comments, hours from posts where cid=%s', (cid))
+    return curs.fetchall()
     
     

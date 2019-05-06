@@ -93,10 +93,7 @@ def createPost(cid):
     
     # connect to database 
     conn = courseBrowser.getConn('c9')
-    
-    # print("course: " + course)
-    # print("semester: " + semester)
-    #return redirect(request.referrer)
+
     uid = session.get('uid', False)
     if not uid:
         flash("Sorry, you have to log in before writing a review.")
@@ -104,7 +101,8 @@ def createPost(cid):
     else:
         # get information about particular course
         courseInfo = courseBrowser.getInfoAboutCourse(conn, cid)
-        return render_template('post.html', course = courseInfo)
+        pastComments = courseBrowser.get_past_comments(conn, cid)
+        return render_template('post.html', course = courseInfo, rows = pastComments)
     
 @app.route('/insertCourse', methods = ["POST"])
 def insertCourse():
