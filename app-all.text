@@ -1,0 +1,448 @@
+use c9;
+
+drop table if exists posts;  -- allows us to source the batch file more than once
+drop table if exists courses;  -- allows us to source the batch file more than once
+drop table if exists users;  -- allows us to source the batch file more than once
+
+
+CREATE TABLE users (
+    name varchar(30),
+    uid int auto_increment,
+    hashedPW char(60),
+    isAdmin enum('0', '1'),
+    primary key (uid)
+)
+
+-- table constraints follow
+ENGINE = InnoDB;
+
+CREATE TABLE courses (
+    name varchar(30),
+    cid int auto_increment,
+    semester char(3), -- ie F19, S19
+    avg_rating int,
+    avg_hours int,
+    primary key (cid)
+)
+-- table constraints follow
+ENGINE = InnoDB;
+
+CREATE TABLE posts (
+    pid int auto_increment,
+    rating enum('1', '2', '3', '4', '5'),
+    comments varchar(1000),
+    hours int not null,
+    uid int not null,
+    cid int not null,
+    
+    INDEX (uid),     -- necessary for referential integrity checking
+    foreign key (uid) references users(uid)
+        on update cascade
+        on delete cascade,
+    foreign key (cid) references courses(cid)
+        on update cascade
+        on delete cascade,
+    
+    primary key (pid)
+)
+-- table constraints follow
+ENGINE = InnoDB;
+use c9;
+
+insert into courses(name,semester, avg_rating, avg_hours) values ("ECON101", "F18", 0, 0);
+insert into courses(name,semester, avg_rating, avg_hours) values ("CS111", "S17", 0, 0);
+insert into courses(name,semester, avg_rating, avg_hours) values ("ENG115", "F16", 0, 0);name,cid,semester,avg_rating,avg_hours
+ECON101,1,F18,,
+CS111,2,F18,,
+ENG115,3,F18,,
+CS115,4,F18,,
+CS115,5,F19,,
+CS204,6,F19,,
+CS220,7,F19,,
+CS230,8,F19,,
+CS231,9,F19,,
+CS234,10,F19,,
+CS235,11,F19,,
+CS240,12,F19,,
+CS251,13,F19,,
+CS304,14,F19,,
+CS305,15,F19,,
+CS307,16,F18,,
+CS307,17,F19,,
+from flask import (Flask, url_for, render_template, request, redirect, flash, session, json, jsonify)
+import MySQLdb
+import math, random, string
+import courseBrowser
+import os
+import bcrypt
+
+''' Create a connection to the c9 database. '''
+conn = MySQLdb.connect(host='localhost',
+                        user='ubuntu',
+                        passwd='',
+                        db='c9')
+curs = conn.cursor()
+app = Flask(__name__)
+
+app.secret_key = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+
+''' Route for a home page and renders the home template.'''
+@app.route('/')
+def homePage():
+    return render_template('index.html')
+ 
+@app.route('/login', methods=['POST'])
+def login():
+    """Function for the main log in page."""
+    #create the login -- if the username is already taken, then search the database
+    #for a matching username and hashed password
+    username = request.form.get('username')
+    pw = request.form.get('password')
+    adminPW = request.form.get('adminPW')
+    # FOR NOW: global admin password == 'admin'
+    isAdmin = "0"
+    if adminPW == 'admin':
+        isAdmin = "1"
+    # query the database to see if there is a matching username and password
+    if username == "" or pw == "":
+        flash("You have entered an illegal username or password. Please try again.")
+        return render_template('index.html')
+    tryToLoginDict = courseBrowser.getUser(conn, username, pw, isAdmin)
+    # valid login and pw
+    if tryToLoginDict['response'] == 0:
+        session['uid'] = tryToLoginDict['uid']
+        return render_template('search.html', loginbanner = "Logged in as " + str(tryToLoginDict['name']))
+    # incorrect pw entered
+    # if the username exists in the database but the password is wrong,
+    # flash a warning to the user and redirect
+    if tryToLoginDict['response'] == 1:
+        flash("You have entered a valid username, but an incorrect password. Please try again.")
+        return render_template('index.html')
+    # if the username is not in the database, then 
+    # update the database by creating a new user with that login and password information
+    # creating a new user with entered username and pw
+    else:
+        session['uid'] = tryToLoginDict['uid']
+        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict["name"]))
+    
+    return redirect(url_for('homePage'))
+   
+@app.route('/createAccount', methods=['POST'])
+def createAccount():
+    """NOT YET IMPLEMENTED"""
+    return render_template('index.html')
+
+@app.route('/search', methods=['GET','POST'])
+def search():
+    """Function for the search bar in the webpage. Displays results
+    similar to the input that user typed into the search bar."""
+    # connect to database
+    conn = courseBrowser.getConn('c9')
+    
+    # grab the arguments
+    if (request.method == 'POST'):
+        searchterm = request.form.get('searchterm')
+    else:
+        searchterm = request.args.get('searchterm')
+    
+    # changing the searchterm to be an empty string just in case the result
+    # turns out to be None --could probably be improved
+    if searchterm is None:
+        searchterm = ""
+    
+    # get the results 
+    courses = courseBrowser.getSearchResults(conn, searchterm)
+    return render_template('search.html', courses = courses)
+    
+@app.route('/createPost/<cid>', methods=['GET', 'POST'])
+def createPost(cid):
+    """Function that redirects to the review page and allows users to create a 
+    review for a particular course"""
+    #courseAndSemester formatted like this: ECON102-F17
+    
+    # connect to database 
+    conn = courseBrowser.getConn('c9')
+    
+    # grab arguments
+    if (request.method == 'POST'):
+        session['uid'] = request.form['uid']
+    # print("course: " + course)
+    # print("semester: " + semester)
+    #return redirect(request.referrer)
+    
+    # get information about particular course
+    courseInfo = courseBrowser.getInfoAboutCourse(conn, cid)
+    return render_template('post.html', course = courseInfo)
+    
+@app.route('/insertCourse')
+def insertCourse():
+    """NOT YET IMPLEMENTED"""
+    return redirect(request.referrer)
+    
+#we need a main init function
+if __name__ == '__main__':
+    app.debug = True
+    app.run('0.0.0.0', 8081)
+import sys
+import MySQLdb
+import bcrypt
+
+def getConn(db):
+    """Function to connect to the passed-in database."""
+    conn = MySQLdb.connect(host='localhost',
+                           user='ubuntu',
+                           passwd='',
+                           db=db)
+    conn.autocommit(True)
+    return conn
+    
+def getCoursesWithTitle(conn, title):
+    """Gets information about ALL courses with similar name."""
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('''select * from courses where name like %s''', ['%' + title + '%'])
+    return curs.fetchall()
+
+def getInfoAboutCourse(conn, cid):
+    """Gets information about a PARTICULAR couse."""
+    #BUG: NEED TO INNER JOIN WITH POSTS BUT POSTS IS BEING WEIRD
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    # curs.execute('''select * from courses where cid = %s''', [cid])
+    curs.execute('''select * from courses where courses.cid = %s''', [cid])
+    return curs.fetchone()
+    
+def getUser(conn, username, pw, isAdmin):
+    """Gets information about a particular user. Checks to see if the password 
+    is a match and whether or not they are an admin."""
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('''select * from users where name = %s''', [username])
+    userDict = curs.fetchone()
+    print("searching for user in the database...")
+    print(userDict)
+    if userDict is not None:
+        hashedPW = bcrypt.hashpw(pw.encode('utf-8'), userDict['hashedPW'].encode('utf-8'))
+        # user and password match what is in the database
+        if userDict['hashedPW'] == hashedPW:
+            userDict['response'] = 0
+            # if the user exists but now they have the admin password (or did not enter an admin password), 
+            # then update their admin information in the database
+            curs.execute('''update users set isAdmin = %s where uid = %s''', [isAdmin, userDict['uid']]);
+            curs.fetchone() # <------------------------ necessary????
+        # user exists but password does not match
+        if userDict['hashedPW'] != hashedPW:
+            userDict['response'] = 1
+        return userDict
+    # username does not exist in the database, create new user
+    else:
+        hashedPW = bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt())
+        print("attempting to insert new user into the database...")
+        curs.execute('''insert into users (name, hashedPW, isAdmin) values (%s, %s, %s)''', [username, hashedPW, isAdmin])
+        curs.execute('''select * from users where name = %s''', [username])
+        userDict = curs.fetchone()
+        userDict['response'] = 2
+    print (userDict)
+    return userDict
+
+def getSearchResults(conn, input_search):
+    """Returns the search results with the given input user types into search bar.
+    For example, if the user types in "cs", the result will be all classes where
+    there is a "cs" in the course name."""
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    term = '%' + input_search + '%'
+    curs.execute('select name, cid, semester from courses where name like %s', [term])
+    return curs.fetchall()<!doctype html>
+<html lang='en'>
+  <head>
+      <meta charset='utf-8'>
+      <meta name=author content="Jennifer Chien, Ngina Kariuki, Beryce Garcia">
+      {% block title %}
+      <title>Wendy’s Course Survival Guide</title>
+      {% endblock %}
+      <link rel="stylesheet" type="text/css" href="../static/style.css">
+  </head>
+  <body>
+    
+    <div id="content">
+      {% block flashes %}
+        <div class="flashes">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+            <div id="messages">
+            {% for msg in messages %}
+                <p>{{msg}}</p>
+            {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+          
+        </div>
+        {% endblock %}
+    </div>
+    
+    {% block login %}
+    {% endblock %}
+    
+    {% block links%}
+    {% endblock %}
+    
+    {% block search %}
+    <form id="search" method=POST action="/search">
+        <input id="searchterm" placeholder="Search" name="searchterm">
+        <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
+    </form>
+    {% endblock %}
+    
+    {% block courseList %}
+    {% endblock %}
+    
+    {% block posts%}
+    {% endblock %}
+    
+    {% block backToHome %}
+    {% endblock %}
+  
+  </body>
+</html>{% extends "base.html" %}
+    
+    {% block login %}
+        <h1>Welcome!</h1>
+
+        <div id="login">
+            <h1>Log In or Create Account</h1>
+            <form action="/login" method="POST">
+              <p><label>Username:</label>
+              <input type="text" name="username" placeholder="username"></p>
+              <p><label>Password:</label>
+              <input type="text" name="password" placeholder="password"></p>
+              <p><label>If you are an admin logging in, enter the admin password:</label>
+              <input type="text" name="adminPW" placeholder="admin password"></p>
+              <button id="submit" type="submit" name="submit" value="submit">Submit</button>
+            </form></p>
+        </div>
+        
+        <p>Use the search bar below to search for a course</p> 
+    {% endblock %}
+        
+    {% block links %}
+        <p>Alternatively, click here for <a href = "/search">All Courses</a>.</p>
+    {% endblock %}
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+
+  </body>
+</html>{% extends "base.html" %}
+
+<body>
+    {% block flashes %}
+    {% endblock %}
+
+    <h2>{{ loginbanner }}</h2>
+
+    {% block posts %}
+        <h1>Showing Results For: {{ course.name }} ({{ course.semester }})</h1>
+        <h2>Overall rating: </h2>
+        <h2>Avg number of hours spent: </h2>
+        <h3>Write a review</h3>
+        
+        <td><form method="post" action="">
+            <p>How would you rate this class on a scale of 1 (poor) to 5 (excellent)?</p>
+            <input type="hidden" name="class" value="class">
+            
+            <label class="class-rating">1
+                <input type="radio" name="stars" value="1"></label>
+            
+            <label class="class-rating">2
+                <input type="radio" name="stars" value="2"></label>
+            
+            <label class="class-rating">3
+                <input type="radio" name="stars" value="3"></label>
+            
+            <label class="class-rating">4
+                <input type="radio" name="stars" value="4"></label>
+            
+            <label class="class-rating">5
+                <input type="radio" name="stars" value="5"></label>
+            
+            <input type="submit" id="rate_btn" value="rate this">
+        </form>
+        
+        <form method=post action="">
+            <p><label for="hours"># of hours spent:</label> <input type="text" name="fname"><br></p> 
+            <input type="submit" value="Submit">
+        </form>
+            
+        <form method=post action="">
+            <p><label for="comment">Other comments: <br><textarea name="comment" rows="5" cols="30"></textarea></label>
+            <p><input type="submit">
+        </form>
+        
+        <h2>Other reviews for this class</h2>
+    {% endblock %}
+
+
+    {% block backToHome %}
+        <a href={{ url_for('homePage') }}>Go Back to Home</a>
+    {% endblock %}
+
+
+
+</body>
+</html>{% extends "base.html" %}
+
+{% block title %}
+<h3>{{ loginbanner }}</h3>
+
+<h2>Search Results</h2>
+{% endblock %}
+<body>
+
+{% block courseList %}
+<table id="courses-list">
+    <tr>
+        <th>Class name</th>
+        <th>Semester</th>
+    </tr>
+
+
+    {%for class in courses%}
+    <tr data-cid={{ class.cid }}>
+        <td class="search_class_name"><a href = {{ url_for('createPost', cid = class.cid) }}>{{ class.name }}</a></td>
+        <td class="search_class_semester">{{ class.semester }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+{% endblock %}
+
+{% block backToHome %}
+<a href={{ url_for('homePage') }}>Go Back to Home</a>
+{% endblock %}
+
+
+
+</body>
+</html>body {
+  background-color: #e5fcfc;
+}
+
+h1 {
+    color: #3a9393;
+}
+
+h2 {
+    color: #3a9393;
+}
+
+h3 {
+    color: #3a9393;
+}
+
+p {
+    color: #3a9393;
+}
+
+.flashes {
+    color: red;
+}

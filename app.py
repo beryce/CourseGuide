@@ -5,6 +5,7 @@ import courseBrowser
 import os
 import bcrypt
 
+
 ''' Create a connection to the c9 database. '''
 conn = MySQLdb.connect(host='localhost',
                         user='ubuntu',
@@ -35,7 +36,7 @@ def login():
         isAdmin = "1"
     # query the database to see if there is a matching username and password
     if username == "" or pw == "":
-        flash("You have entered an illegal username or password. Please try again.")
+        flash("Invalid username/password.")
         return render_template('index.html')
     tryToLoginDict = courseBrowser.getUser(conn, username, pw, isAdmin)
     # valid login and pw
