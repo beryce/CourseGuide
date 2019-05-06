@@ -57,11 +57,6 @@ def login():
         return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict["name"]))
     
     return redirect(url_for('homePage'))
-   
-@app.route('/createAccount', methods=['POST'])
-def createAccount():
-    """NOT YET IMPLEMENTED"""
-    return render_template('index.html')
 
 @app.route('/search', methods=['GET','POST'])
 def search():
@@ -119,10 +114,17 @@ def insertCourse():
         return redirect(url_for('homePage'))
     else:
         # grab name and semester from form
-        name = request.form.get("newcoursename")
-        semester = request.form.get("newsemester")
-        courseBrowser.insertCourse(conn, name, semester)
-        flash("Course added!")
+        name = request.form.get("newcoursename").upper()
+        semester = request.form.get("newsemester").upper().encode("utf-8")
+        professor = request.form.get("prof").upper()
+        if (len(semester) != 3) or (semester[0]!='F' and semester[0]!='S') or (not (semester[1:].isdigit())):
+            flash("Invalid semester.")
+            redirect(url_for("search"))
+        else:
+            if courseBrowser.insertCourse(conn, professor, name, semester):
+                flash("Course added!")
+            else:
+                flash("Uh-oh! It looks like this course already exists in our database...")
         return redirect(url_for("search"))
       
 @app.route('/rateCourse/', methods=['POST'])   

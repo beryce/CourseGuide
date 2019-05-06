@@ -6,6 +6,21 @@
 <h2>Search Results</h2>
 {% endblock %}
 <body>
+    
+{% block addCourse %}
+    <div id="insert_new_course">
+            <h3>Don't see what you're looking for? Add it to our database!</h3></h3>
+            <form action={{ url_for('insertCourse') }} method="POST">
+              <p><label>Course name:</label>
+              <input type="text" id="newcoursename" name="newcoursename" placeholder="ie CS111"></p>
+              <p><label>Professor(s):</label>
+              <input type="text" id="prof" name="prof" placeholder="first & last name"></p>
+              <p><label>Semester:</label>
+              <input type="text" id="newsemester" name="newsemester" placeholder="ie F17 or S19"></p>
+              <button id="submit" type="submit" name="submit" value="submit">Submit</button>
+            </form></p>
+        </div>
+{% endblock %}
 
 {% block courseList %}
 <table id="courses-list">
@@ -22,19 +37,6 @@
     </tr>
     {% endfor %}
 </table>
-{% endblock %}
-
-{% block addCourse %}
-    <div id="insert_new_course">
-            <h3>Don't see what you're looking for? Add it to our database!</h3></h3>
-            <form action={{ url_for('insertCourse') }} method="POST">
-              <p><label>Course name:</label>
-              <input type="text" id="newcoursename" name="newcoursename" placeholder="Course name"></p>
-              <p><label>Semester:</label>
-              <input type="text" id="newsemester" name="newsemester" placeholder="Semester"></p>
-              <button id="submit" type="submit" name="submit" value="submit">Submit</button>
-            </form></p>
-        </div>
 {% endblock %}
 
 {% block backToHome %}
