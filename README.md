@@ -5,7 +5,7 @@ This is the final project for CS304: Databases and Web Interfaces at Wellesley C
 - __sql_scripts:__ all sql files
 - __templates:__ contains all htmls
 
-#### Setting up test files
+#### Setting up tables
 1. source venv/bin/activate
 2. start mysql server, mysql-ctl start
 3. run mysql --local-infile
