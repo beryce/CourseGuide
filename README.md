@@ -6,9 +6,13 @@ This is the final project for CS304: Databases and Web Interfaces at Wellesley C
 - __templates:__ contains all htmls
 
 #### Setting up tables
-1. source venv/bin/activate
-2. start mysql server, mysql-ctl start
-3. run mysql --local-infile
-4. source make-tables.sql
-5. source load-courses-data.sql
-6. to see added data, select * courses
+
+```
+$ cd cs304FinalProj
+$ source ../venv/bin/activate
+$ mysql-ctl start
+$ mysql --local-infile
+mysql> source sql_scripts/make-tables.sql
+mysql> source sql_scripts/load-courses-data.sql
+mysql> select * from courses limit 10;
+```
