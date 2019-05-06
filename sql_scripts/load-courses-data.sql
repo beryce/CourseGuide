@@ -1,7 +1,7 @@
 
 use c9;
 
-load data local infile 'course-data.csv' 
+load data local infile 'sql_scripts/course-data.csv' 
 into table courses 
 fields terminated by ',' 
 lines terminated by '\n'

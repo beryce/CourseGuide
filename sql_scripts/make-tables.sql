@@ -20,7 +20,7 @@ CREATE TABLE courses (
     name varchar(30),
     cid int auto_increment,
     semester char(3), -- ie F19, S19
-    avg_rating float, --changed to float
+    avg_rating float,
     avg_hours float,
     primary key (cid)
 )
