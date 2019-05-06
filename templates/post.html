@@ -33,7 +33,7 @@
             <p><label for="hours"># of hours spent:</label> <input type="text" name="fname"><br></p>
             
             <!--moved comments input text box here -->
-            <p><label for="comment">Other comments: <br><textarea name="comment" rows="5" cols="30"></textarea></label></p>
+            <p><label>Other comments: <br><textarea name="comment" rows="5" cols="30"></textarea></label></p>
 
             <p><input type="submit" id="rate_btn" value="Rate this!"></p>
         </form>
@@ -54,6 +54,14 @@
 
     {% block backToHome %}
         <a href={{ url_for('homePage') }}>Go Back to Home</a>
+    {% endblock %}
+    
+    {% block past_posts %}
+    <dl>
+        {% for row in rows %}
+            <dt>Anonymous at {{row.time}}</dt><dd>{{row.entry}}</dd>
+        {% endfor %}
+    </dl>
     {% endblock %}
 
 

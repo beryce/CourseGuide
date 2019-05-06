@@ -14,7 +14,7 @@ def getConn(db):
     return conn
     
 def getCoursesWithTitle(conn, title):
-    """Gets information about ALL courses with similar name."""
+    """Gets name, cid, semester, avg_rating, avg_hours for ALL courses with similar name."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('''select * from courses where name like %s''', ['%' + title + '%'])
     return curs.fetchall()
@@ -22,7 +22,10 @@ def getCoursesWithTitle(conn, title):
 def insertCourse(conn, name, semester):
     """Inserts a new course with given name and semester into course database."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
+<<<<<<< Updated upstream
     lock.acquire()
+=======
+>>>>>>> Stashed changes
     curs.execute('insert into courses(name, semester) values (%s, %s) on duplicate key update name = %s, semester = %s', 
                 (name, semester, name, semester))
     lock.release()
@@ -68,9 +71,9 @@ def getUser(conn, username, pw, isAdmin):
     return userDict
 
 def getSearchResults(conn, input_search):
-    """Returns the search results with the given input user types into search bar.
+    """Returns the name, cid, semester for the given course name user types into search bar.
     For example, if the user types in "cs", the result will be all classes where
-    there is a "cs" in the course name."""
+    there is a "cs" in the course name. """
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     term = '%' + input_search + '%'
     curs.execute('select name, cid, semester from courses where name like %s', [term])
@@ -116,4 +119,12 @@ def update_avghours(conn, cid):
     avghours = compute_avghours(conn, cid)
     curs.execute('update courses set avg_hours=%s where cid=%s',(avghours, cid))
     return curs.fetchall()
+    
+def get_past_comments(conn, cid):
+    '''Show the rating, comments, and hours other people entered in the past 
+    for a particular course'''
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('select rating, comments, hours from posts')
+    return curs.fetchone()
+    
     

@@ -6,7 +6,7 @@
       {% block title %}
       <title>Wendy’s Course Survival Guide</title>
       {% endblock %}
-      <link rel="stylesheet" type="text/css" href="../static/style.css">
+      <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}">
   </head>
   <body>
     
@@ -34,7 +34,7 @@
     {% endblock %}
     
     {% block search %}
-    <form id="search" method=POST action="/search">
+    <form id="search" method=POST action="{{url_for('search')}}">
         <input id="searchterm" placeholder="Search" name="searchterm">
         <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
     </form>
@@ -50,6 +50,9 @@
     {% endblock %}
     
     {% block backToHome %}
+    {% endblock %}
+    
+    {% block past_posts %}
     {% endblock %}
   
   </body>

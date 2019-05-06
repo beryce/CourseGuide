@@ -1,8 +1,8 @@
 use c9;
 
 drop table if exists posts;  -- allows us to source the batch file more than once
-drop table if exists courses;  -- allows us to source the batch file more than once
 drop table if exists users;  -- allows us to source the batch file more than once
+drop table if exists courses;  -- allows us to source the batch file more than once
 
 
 CREATE TABLE users (
@@ -29,6 +29,7 @@ ENGINE = InnoDB;
 
 CREATE TABLE posts (
     pid int auto_increment,
+    entered timestamp,
     rating enum('1', '2', '3', '4', '5'),
     comments varchar(1000),
     hours float not null, 

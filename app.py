@@ -72,14 +72,14 @@ def search():
     
     # grab the arguments
     if (request.method == 'POST'):
-        searchterm = request.form.get('searchterm')
+        searchterm = request.form.get('searchterm', "")
     else:
-        searchterm = request.args.get('searchterm')
+        searchterm = request.args.get('searchterm', "")
     
     # changing the searchterm to be an empty string just in case the result
     # turns out to be None --could probably be improved
-    if searchterm is None:
-        searchterm = ""
+    # if searchterm is None:
+    #     searchterm = ""
     
     # get the results 
     courses = courseBrowser.getSearchResults(conn, searchterm)
@@ -155,4 +155,4 @@ def rateCourse():
 #we need a main init function
 if __name__ == '__main__':
     app.debug = True
-    app.run('0.0.0.0', 8080)
+    app.run('0.0.0.0', 8082)

@@ -1,4 +1,5 @@
-
+-- primary file to use
+-- backup is insert-courses if this does not work
 use c9;
 
 load data local infile 'sql_scripts/course-data.csv' 
