@@ -40,6 +40,9 @@
     </form>
     {% endblock %}
     
+    {% block filter %}
+    {% endblock %}
+    
     {% block courseList %}
     {% endblock %}
     
@@ -54,6 +57,11 @@
     
     {% block past_posts %}
     {% endblock %}
+  
+  {% block scripts %}
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="{{url_for('static', filename ='rating.js')}}"></script>
+  {% endblock %}
   
   </body>
 </html>

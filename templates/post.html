@@ -5,14 +5,16 @@
     <h2>{{ loginbanner }}</h2>
 
     {% block posts %}
+        <p>This button turns on/off all the JavaScript:
+        <button id="progressive_enhancement">Turn On Progressive Enhancement</button></p>
         <h1>Showing Results For: {{ course.name }} ({{ course.semester }})</h1>
-        <h2>Overall rating: {{course.avg_rating}}</h2>
-        <h2>Avg number of hours spent: {{course.avg_hours}}</h2>
+        <h2 id="avgrating">Overall rating: {{ course.avg_rating }}</h2>
+        <h2 id="avghours">Avg number of hours spent: {{ course.avg_hours }}</h2>
         <h3>Write a review</h3>
         
         <td><form id="rating" method="post" action="{{url_for('rateCourse')}}">
             <p>How would you rate this class on a scale of 1 (poor) to 5 (excellent)?</p>
-            <input type="hidden" name="cid" value="{{course.cid}}">
+            <input type="hidden" name="cid" value={{ course.cid }}>
             
             <label class="class-rating">1
                 <input type="radio" name="stars" value="1"></label>
@@ -30,10 +32,10 @@
                 <input type="radio" name="stars" value="5"></label>
                 
             <!--moved hrs input text box here -->
-            <p><label for="hours"># of hours spent:</label> <input type="text" name="fname"><br></p>
+            <p><label id="hours"># of hours spent:</label> <input type="text" name="fname"><br></p>
             
             <!--moved comments input text box here -->
-            <p><label>Other comments: <br><textarea name="comment" rows="5" cols="30"></textarea></label></p>
+            <p><label id="comments">Other comments: <br><textarea name="comment" rows="5" cols="30"></textarea></label></p>
 
             <p><input type="submit" id="rate_btn" value="Rate this!"></p>
         </form>
@@ -62,12 +64,12 @@
             <dd>
                 <li>Rating: {{row.rating}}</li>
                 <li>Hours spent: {{row.hours}}</li>
-                <li>Coment: {{row.comments}}</li>
+                <li>Comment: {{row.comments}}</li>
             </dd>
+            <br>
         {% endfor %}
     </dl>
     {% endblock %}
-
 
 
 </body>

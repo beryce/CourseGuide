@@ -76,11 +76,6 @@ def search():
     else:
         searchterm = request.args.get('searchterm', "")
     
-    # changing the searchterm to be an empty string just in case the result
-    # turns out to be None --could probably be improved
-    # if searchterm is None:
-    #     searchterm = ""
-    
     # get the results 
     courses = courseBrowser.getSearchResults(conn, searchterm)
     return render_template('search.html', courses = courses)
@@ -101,7 +96,7 @@ def createPost(cid):
     else:
         # get information about particular course
         courseInfo = courseBrowser.getInfoAboutCourse(conn, cid)
-        pastComments = courseBrowser.get_past_comments(conn, cid, uid)
+        pastComments = courseBrowser.get_past_comments(conn, cid)
         return render_template('post.html', course = courseInfo, rows = pastComments)
     
 @app.route('/insertCourse', methods = ["POST"])
@@ -148,9 +143,37 @@ def rateCourse():
             flash("Error")
     else:
         flash('You need to login!')
-    return redirect(request.referrer) 
+    return redirect(request.referrer)
+    
+@app.route('/rateCourseAjax/', methods=['POST'])   
+def rateCourseAjax():
+    """rate a selected course and update average rating and hours"""
+    try:
+        if 'uid' in session:
+            conn = courseBrowser.getConn('c9')
+            uid = session['uid']
+            cid = request.form.get('cid')
+            rating = request.form.get('stars')
+            hours = request.form.get('fname')
+            comments = request.form.get('comment')
+            if courseBrowser.rate_course(conn, uid, cid, rating, hours, comments):
+                # print out new average ratings and hours
+                avg_rating = courseBrowser.compute_avgrating(conn, cid)
+                avg_hours = courseBrowser.compute_avghours(conn, cid)
+                
+                # update average ratings and hours
+                courseBrowser.update_avgrating(conn, cid)
+                courseBrowser.update_avghours(conn, cid)
+                return jsonify({"avg_rating": avg_rating, "avg_hours": avg_hours})
+            else:
+                return jsonify({"avg_rating": "None", "avg_hours": "None"})
+        else:
+            return jsonify({"avg_rating": "None", "avg_hours": "None"})
+    except:
+        return jsonify({"avg_rating": "None", "avg_hours": "None"})
+    
     
 #we need a main init function
 if __name__ == '__main__':
     app.debug = True
-    app.run('0.0.0.0', 8082)
+    app.run('0.0.0.0', 8081)
