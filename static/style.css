@@ -8,16 +8,79 @@ h1 {
 
 h2 {
     color: #3a9393;
+    
 }
 
 h3 {
     color: #3a9393;
+    /*color: #284348;*/
 }
 
 p {
-    color: #3a9393;
+    /*color: #3a9393;*/
+    color: #284348;
 }
 
-.flashes {
+#statistics {
+    border-style: solid;
+    border-color: #416971;
+    background-color: #CEF0F6;
+}
+
+dt {
+    font-weight: bold;
+}
+
+#writereview {
+    margin-top: 50px;
+    border-style: solid;
+    border-color: #416971;
+    background-color: #CEF0F6;
+    
+}
+
+.flashes { /* not working */
     color: red;
+}
+
+.introduction {
+    text-align: center;
+}
+
+/* Add a blue-green background color to the top navigation */
+.topnav {
+  background-color: #0B7C7C;
+  overflow: hidden;
+}
+
+.search_class_semester {
+    float: right;
+}
+
+/* Style the links inside the navigation bar */
+.topnav a {
+  float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+/* Change the color of links on hover */
+.topnav a:hover {
+  background-color: #95DFDF;
+  color: black;
+}
+
+/* Add an active class to highlight the current page */
+/*.active {*/
+/*  background-color: #77CCCC;*/
+/*  color: white;*/
+/*}*/
+
+/* Hide the link that should open and close the topnav on small screens */
+.topnav .icon {
+  display: none;
 }

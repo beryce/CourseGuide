@@ -20,6 +20,10 @@ app.secret_key = ''.join([random.choice(string.ascii_letters + string.digits) fo
 @app.route('/')
 def homePage():
     return render_template('index.html')
+
+@app.route('/addCourse/')
+def add_course():
+    return render_template('addcourse.html')
  
 @app.route('/login', methods=['POST'])
 def login():
@@ -47,7 +51,7 @@ def login():
     # if the username exists in the database but the password is wrong,
     # flash a warning to the user and redirect
     if tryToLoginDict['response'] == 1:
-        flash("You have entered a valid username, but an incorrect password. Please try again.")
+        flash("Invalid username/password.")
         return render_template('index.html')
     # if the username is not in the database, then 
     # update the database by creating a new user with that login and password information
@@ -63,7 +67,7 @@ def createAccount():
     """NOT YET IMPLEMENTED"""
     return render_template('index.html')
 
-@app.route('/search', methods=['GET','POST'])
+@app.route('/search', methods=['GET', 'POST'])
 def search():
     """Function for the search bar in the webpage. Displays results
     similar to the input that user typed into the search bar."""
@@ -71,13 +75,32 @@ def search():
     conn = courseBrowser.getConn('c9')
     
     # grab the arguments
-    if (request.method == 'POST'):
+    if request.method == 'POST':
         searchterm = request.form.get('searchterm', "")
+        semester = request.form.get('semester_filter', "")
     else:
         searchterm = request.args.get('searchterm', "")
-    
+        semester = request.args.get('semester_filter', "")
+        
     # get the results 
-    courses = courseBrowser.getSearchResults(conn, searchterm)
+    courses = courseBrowser.getSearchResults(conn, searchterm, semester)
+    
+    return render_template('search.html', courses = courses)
+
+@app.route('/updateSearch', methods=['POST'])
+def update_search():
+    """Function for the filterbar in the webpage. Displays results
+    similar to the input that user typed into the filter bar."""
+    # connect to database
+    conn = courseBrowser.getConn('c9')
+    
+    # grab the arguments]
+    semester = request.form.get('semester_filter', "")
+    # get the results 
+    courses = courseBrowser.updateSearch(conn, semester)
+    print("COURSES: ")
+    print(courses)
+    # return redirect(url_for('search', courses = courses))
     return render_template('search.html', courses = courses)
     
 @app.route('/createPost/<cid>', methods=['GET', 'POST'])
@@ -176,4 +199,4 @@ def rateCourseAjax():
 #we need a main init function
 if __name__ == '__main__':
     app.debug = True
-    app.run('0.0.0.0', 8081)
+    app.run('0.0.0.0', 8082)

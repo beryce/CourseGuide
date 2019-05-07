@@ -8,37 +8,46 @@
         <p>This button turns on/off all the JavaScript:
         <button id="progressive_enhancement">Turn On Progressive Enhancement</button></p>
         <h1>Showing Results For: {{ course.name }} ({{ course.semester }})</h1>
-        <h2 id="avgrating">Overall rating: {{ course.avg_rating }}</h2>
-        <h2 id="avghours">Avg number of hours spent: {{ course.avg_hours }}</h2>
-        <h3>Write a review</h3>
         
-        <td><form id="rating" method="post" action="{{url_for('rateCourse')}}">
-            <p>How would you rate this class on a scale of 1 (poor) to 5 (excellent)?</p>
-            <input type="hidden" name="cid" value={{ course.cid }}>
+        <div id="statistics">
+            <h2 id="avgrating">Overall rating: {{ course.avg_rating }}</h2>
+            <h2 id="avghours">Avg number of hours spent: {{ course.avg_hours }}</h2>
+        </div>
+        
+        <div id="writereview">
+            <h3>Write a review</h3>
             
-            <label class="class-rating">1
-                <input type="radio" name="stars" value="1"></label>
+            <td>
+                <form id="rating" method="post" action="{{url_for('rateCourse')}}">
+                    <p>How would you rate this class on a scale of 1 (poor) to 5 (excellent)?</p>
+                    <input type="hidden" name="cid" value={{ course.cid }}>
+                    
+                    <label class="class-rating">1
+                        <input type="radio" name="stars" value="1"></label>
+                    
+                    <label class="class-rating">2
+                        <input type="radio" name="stars" value="2"></label>
+                    
+                    <label class="class-rating">3
+                        <input type="radio" name="stars" value="3"></label>
+                    
+                    <label class="class-rating">4
+                        <input type="radio" name="stars" value="4"></label>
+                    
+                    <label class="class-rating">5
+                        <input type="radio" name="stars" value="5"></label>
+                        
+                    <!--moved hrs input text box here -->
+                    <p><label id="hours"># of hours spent:</label> <input type="text" name="fname"><br></p>
+                    
+                    <!--moved comments input text box here -->
+                    <p><label id="comments">Other comments: <br><textarea name="comment" rows="5" cols="30"></textarea></label></p>
+        
+                    <p><input type="submit" id="rate_btn" value="Rate this!"></p>
+                </form>
             
-            <label class="class-rating">2
-                <input type="radio" name="stars" value="2"></label>
-            
-            <label class="class-rating">3
-                <input type="radio" name="stars" value="3"></label>
-            
-            <label class="class-rating">4
-                <input type="radio" name="stars" value="4"></label>
-            
-            <label class="class-rating">5
-                <input type="radio" name="stars" value="5"></label>
-                
-            <!--moved hrs input text box here -->
-            <p><label id="hours"># of hours spent:</label> <input type="text" name="fname"><br></p>
-            
-            <!--moved comments input text box here -->
-            <p><label id="comments">Other comments: <br><textarea name="comment" rows="5" cols="30"></textarea></label></p>
-
-            <p><input type="submit" id="rate_btn" value="Rate this!"></p>
-        </form>
+        </div>
+        
         
         <!--<form method=post action="">-->
         <!--    <p><label for="hours"># of hours spent:</label> <input type="text" name="fname"><br></p> -->
@@ -53,10 +62,6 @@
         <h2>Other reviews for this class</h2>
     {% endblock %}
 
-    {% block backToHome %}
-        <a href={{ url_for('homePage') }}>Go Back to Home</a>
-    {% endblock %}
-    
     {% block past_posts %}
     <dl>
         {% for row in rows %}

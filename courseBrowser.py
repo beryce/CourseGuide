@@ -67,13 +67,14 @@ def getUser(conn, username, pw, isAdmin):
         userDict['response'] = 2
     return userDict
 
-def getSearchResults(conn, input_search):
+def getSearchResults(conn, input_search, input_semester):
     """Returns the name, cid, semester for the given course name user types into search bar.
     For example, if the user types in "cs", the result will be all classes where
     there is a "cs" in the course name. """
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    term = '%' + input_search + '%'
-    curs.execute('select name, cid, semester from courses where name like %s', [term])
+    name = '%' + input_search + '%'
+    sem = '%' + input_semester + '%'
+    curs.execute('select name, cid, semester from courses where name like %s and semester like %s', [name, sem])
     return curs.fetchall()
     
 def rate_course(conn, uid, cid, rating, hours, comments): 
@@ -124,4 +125,9 @@ def get_past_comments(conn, cid):
     curs.execute('select name, entered, rating, comments, hours from posts inner join users where cid = %s and posts.uid = users.uid', [cid])
     return curs.fetchall()
     
-    
+def updateSearch(conn, semester):
+    '''Returns the name and semester of all courses for a given fall/spring semester and year.'''
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    print("SEMESTER: " + str(semester))
+    curs.execute('select name, semester from courses where semester = %s', [semester])
+    return curs.fetchall()

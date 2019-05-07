@@ -1,10 +1,10 @@
 {% extends "base.html" %}
     
     {% block login %}
-        <h1>Welcome!</h1>
+        <h1 class="introduction">Welcome!</h1>
 
-        <div id="login">
-            <h1>Log In or Create Account</h1>
+        <div id="login" class="introduction">
+            <h2>Log in or create an account</h2>
             <form action="{{url_for('login')}}" method="POST">
               <p><label>Username:</label>
               <input type="text" name="username" placeholder="username"></p>
@@ -16,12 +16,9 @@
             </form></p>
         </div>
         
-        <p>Use the search bar below to search for a course</p> 
+        
     {% endblock %}
         
-    {% block links %}
-        <p>Alternatively, click here for <a href = "/search">All Courses</a>.</p>
-    {% endblock %}
     
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     
