@@ -19,13 +19,19 @@ def getCoursesWithTitle(conn, title):
     curs.execute('''select * from courses where name like %s''', ['%' + title + '%'])
     return curs.fetchall()
 
-def insertCourse(conn, name, semester):
+def insertCourse(conn, professor, name, semester):
     """Inserts a new course with given name and semester into course database."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     lock.acquire()
-    curs.execute('insert into courses(name, semester) values (%s, %s) on duplicate key update name = %s, semester = %s', 
-                (name, semester, name, semester))
+    #first check if the information is already a course in the database
+    didInsert = False
+    curs.execute('select name, professor, semester from courses where name=%s and semester=%s and professor=%s', (name, semester, professor))
+    if (curs.fetchone() is None):
+        curs.execute('insert into courses(name, semester, professor) values (%s, %s, %s) on duplicate key update name = %s, semester = %s', 
+                    (name, semester, professor, name, semester))
+        didInsert = True
     lock.release()
+    return didInsert
 
 def getInfoAboutCourse(conn, cid):
     """Gets information about a PARTICULAR couse."""
