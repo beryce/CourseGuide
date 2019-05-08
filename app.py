@@ -73,12 +73,16 @@ def search():
     if request.method == 'POST':
         searchterm = request.form.get('searchterm', "")
         semester = request.form.get('semester_filter', "")
+        prof = request.form.get('professor_filter', "")
     else:
         searchterm = request.args.get('searchterm', "")
         semester = request.args.get('semester_filter', "")
+        prof = request.form.get('professor_filter', "")
+    
+    print("prof: " + prof)
         
     # get the results 
-    courses = courseBrowser.getSearchResults(conn, searchterm, semester)
+    courses = courseBrowser.getSearchResults(conn, searchterm, semester, prof)
     
     return render_template('search.html', courses = courses)
 
@@ -134,7 +138,7 @@ def insertCourse():
         # grab name and semester from form
         name = request.form.get("newcoursename").upper()
         semester = request.form.get("newsemester").upper().encode("utf-8")
-        professor = request.form.get("prof").upper()
+        professor = request.form.get("newprofessor").upper()
         if (len(semester) != 3) or (semester[0]!='F' and semester[0]!='S') or (not (semester[1:].isdigit())):
             flash("Invalid semester.")
             redirect(url_for("search"))

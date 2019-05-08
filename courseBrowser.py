@@ -27,8 +27,8 @@ def insertCourse(conn, professor, name, semester):
     didInsert = False
     curs.execute('select name, professor, semester from courses where name=%s and semester=%s and professor=%s', (name, semester, professor))
     if (curs.fetchone() is None):
-        curs.execute('insert into courses(name, semester, professor) values (%s, %s, %s) on duplicate key update name = %s, semester = %s', 
-                    (name, semester, professor, name, semester))
+        curs.execute('insert into courses(name, semester, professor, avg_rating, avg_hours) values (%s, %s, %s, 0, 0) on duplicate key update name = %s, semester = %s, professor = %s', 
+                (name, semester, professor, name, semester, professor))
         didInsert = True
     lock.release()
     return didInsert
@@ -73,14 +73,15 @@ def getUser(conn, username, pw, isAdmin):
         userDict['response'] = 2
     return userDict
 
-def getSearchResults(conn, input_search, input_semester):
+def getSearchResults(conn, input_search, input_semester, input_prof):
     """Returns the name, cid, semester for the given course name user types into search bar.
     For example, if the user types in "cs", the result will be all classes where
     there is a "cs" in the course name. """
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     name = '%' + input_search + '%'
     sem = '%' + input_semester + '%'
-    curs.execute('select name, cid, semester from courses where name like %s and semester like %s', [name, sem])
+    prof = '%' + input_prof + '%'
+    curs.execute('select name, cid, semester, professor from courses where name like %s and semester like %s and professor like %s', [name, sem, prof])
     return curs.fetchall()
     
 def rate_course(conn, uid, cid, rating, hours, comments): 
