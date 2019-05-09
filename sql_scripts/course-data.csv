@@ -1,4 +1,4 @@
-name,cid,semester,avg_rating,avg_hours
+name,cid,semester,professor,avg_rating,avg_hours
 ECON101,1,F18,Daniel Fetter,
 CS111,2,F18,Lyn Turbak,
 ENG115,3,F18,Lawrence Rosenwald,

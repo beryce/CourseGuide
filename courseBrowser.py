@@ -132,9 +132,9 @@ def get_past_comments(conn, cid):
     curs.execute('select name, entered, rating, comments, hours from posts inner join users where cid = %s and posts.uid = users.uid', [cid])
     return curs.fetchall()
     
-def updateSearch(conn, semester):
-    '''Returns the name and semester of all courses for a given fall/spring semester and year.'''
-    curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    print("SEMESTER: " + str(semester))
-    curs.execute('select name, semester from courses where semester = %s', [semester])
-    return curs.fetchall()
+# def updateSearch(conn, semester):
+#     '''Returns the name and semester of all courses for a given fall/spring semester and year.'''
+#     curs = conn.cursor(MySQLdb.cursors.DictCursor)
+#     print("SEMESTER: " + str(semester))
+#     curs.execute('select name, semester from courses where semester = %s', [semester])
+#     return curs.fetchall()
