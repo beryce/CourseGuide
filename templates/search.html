@@ -24,19 +24,24 @@
 <body>
     
 {% block courseList %}
+<h2>Search Results</h2>
 <table id="courses-list">
-    <h2>Search Results</h2>
+    <tbody>
     <tr>
         <th>Class name</th>
         <th>Semester</th>
         <th>Professor</th>
+        <th>Average Hours</th>
+        <th>Average Rating</th>
     </tr>
 
-    {%for class in courses%}
-    <tr data-cid={{ class.cid }}>
-        <td class="search_class_name"><a href = {{ url_for('createPost', cid = class.cid) }}>{{ class.name }}</a></td>
-        <td class="search_class_semester">{{ class.semester }}</td>
-        <td class="search_class_professor">{{ class.professor }}</td>
+    {%for course in courses%}
+        <tr data-cid={{course.cid}}>
+        <td class="search_class_name"><a href = {{ url_for('createPost', cid = course.cid) }}>{{course.name}}</a></td>
+        <td class="search_class_semester">{{course.semester}}</td>
+        <td class="search_class_professor">{{course.professor}}</td>
+        <td class="search_class_professor">{{course.avg_hours}}</td>
+        <td class="search_class_professor">{{course.avg_rating}}</td>
     </tr>
     {% endfor %}
 </table>

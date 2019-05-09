@@ -34,6 +34,10 @@ def login():
     username = request.form.get('username')
     pw = request.form.get('password')
     adminPW = request.form.get('adminPW')
+    
+    # course examples displayed after successful login
+    dummyCourses = courseBrowser.getSearchResults(conn, "", "", "")
+    
     # FOR NOW: global admin password == 'admin'
     isAdmin = "0"
     if adminPW == 'admin':
@@ -46,7 +50,7 @@ def login():
     # valid login and pw
     if tryToLoginDict['response'] == 0:
         session['uid'] = tryToLoginDict['uid']
-        return render_template('search.html', loginbanner = "Logged in as " + str(tryToLoginDict['name']))
+        return render_template('search.html', loginbanner = "Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
     # incorrect pw entered
     # if the username exists in the database but the password is wrong,
     # flash a warning to the user and redirect
@@ -58,7 +62,7 @@ def login():
     # creating a new user with entered username and pw
     else:
         session['uid'] = tryToLoginDict['uid']
-        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict["name"]))
+        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict["name"]), courses=dummyCourses)
     
     return redirect(url_for('homePage'))
 
@@ -66,10 +70,8 @@ def login():
 def search():
     """Function for the search bar in the webpage. Displays results
     similar to the input that user typed into the search bar."""
-    # connect to database
-    conn = courseBrowser.getConn('c9')
     
-    # grab the arguments
+    conn = courseBrowser.getConn('c9')
     if request.method == 'POST':
         searchterm = request.form.get('searchterm', "")
         semester = request.form.get('semester_filter', "")
@@ -78,13 +80,9 @@ def search():
         searchterm = request.args.get('searchterm', "")
         semester = request.args.get('semester_filter', "")
         prof = request.form.get('professor_filter', "")
-    
-    print("prof: " + prof)
         
-    # get the results 
     courses = courseBrowser.getSearchResults(conn, searchterm, semester, prof)
-    
-    return render_template('search.html', courses = courses)
+    return render_template('search.html', courses=courses)
 
 @app.route('/updateSearch', methods=['POST'])
 def update_search():
