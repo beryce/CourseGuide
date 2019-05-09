@@ -18,8 +18,8 @@
         <a href={{ url_for('search') }}>Search</a>
         <a href={{ url_for('add_course') }}>Add A Course</a>
         <a href={{ url_for('editPosts') }}>Edit My Posts</a>
-        <a href="">Delete Posts</a>
-        <a href="">Manage Courses</a>
+        <a href={{ url_for('delete') }}>Delete Posts</a>
+        <a href={{ url_for('manageCourses') }}>Manage Courses</a>
         <a href="javascript:void(0);" class="icon" onclick="myFunction()">
           <i class="fa fa-bars"></i>
         </a>
@@ -43,12 +43,15 @@
         {% endblock %}
     </div>
     
+    {% block links %}
+    {% endblock %}
+    
     {% block login %}
     {% endblock %}
     
-    {% block links%}
+    {% block loginbanner %}
+      <h4>{{ loginbanner }}</h4>
     {% endblock %}
-    
     
     {% block search %}
     {% endblock %}
@@ -64,7 +67,6 @@
     
     {% block posts%}
     {% endblock %}
-    
     
     {% block past_posts %}
     {% endblock %}

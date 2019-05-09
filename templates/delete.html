@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+<body>
+    
+    {% block links %}
+    <h2>Select a post to delete: </h2>
+    {% endblock %}
+    
+    {% block past_posts %}
+    <dl>
+        <form action="/delete" method="post">
+        {% for row in rows %}
+            <br>
+                <input type="checkbox" name="coursePost" value={{row.cid}}> Post for {{row.name}} on {{row.entered}}
+                <dd>
+                    <li>Rating: {{row.rating}}</li>
+                    <li>Hours spent: {{row.hours}}</li>
+                    <li>Comment: {{row.comments}}</li>
+                </dd>
+        {% endfor %}
+        <br><input type="submit" value="Submit">
+        </form> 
+    </dl>
+    {% endblock %}
+
+
+
+</body>
+</html>

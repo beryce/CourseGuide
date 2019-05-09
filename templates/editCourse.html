@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+<body>
+    
+    {% block links %}
+    <h2>{{coursename}}</h2>
+    {% endblock %}
+    
+    {% block posts %}
+        <h1>Showing Results For: {{ course.name }} ({{ course.semester }})</h1>
+            <h2>Professor: {{ course.professor }}</h2>
+            
+            <div id="statistics">
+                <h2 id="avgrating">Overall rating: {{ course.avg_rating }}</h2>
+                <h2 id="avghours">Avg number of hours spent: {{ course.avg_hours }}</h2>
+            </div>
+    {% endblock %}
+
+
+
+</body>
+</html>

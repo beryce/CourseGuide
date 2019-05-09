@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+<body>
+    
+    {% block links %}
+    <h2>Select a course to edit/delete:</h2>
+    {% endblock %}
+    
+    {% block past_posts %}
+        <table id="courses-list">
+    <tbody>
+    <tr>
+        <th>Class name</th>
+        <th>Semester</th>
+        <th>Professor</th>
+        <th>Average Hours</th>
+        <th>Average Rating</th>
+    </tr>
+
+    {%for course in courses%}
+        <tr data-cid={{course.cid}}>
+        <td class="search_class_name"><a href = {{ url_for('editCourse', cid = course.cid) }}>{{course.name}}</a></td>
+        <td class="search_class_semester">{{course.semester}}</td>
+        <td class="search_class_professor">{{course.professor}}</td>
+        <td class="search_class_professor">{{course.avg_hours}}</td>
+        <td class="search_class_professor">{{course.avg_rating}}</td>
+    </tr>
+    {% endfor %}
+</table>
+    {% endblock %}
+
+
+
+</body>
+</html>

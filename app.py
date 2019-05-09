@@ -39,11 +39,13 @@ def login():
     
     # FOR NOW: global admin password == 'admin'
     isAdmin = "0"
+    session['isAdmin'] = False
     if adminPW == 'admin': # needs to be stored more securely (this will show up on view source)
     # if admin is not empty password, go look up in bcrypt (bcrypt it and compare it to something you read from a table)
     # another way--have a boolean with each person's username on whether they're the administrator
     # can put this boolean in the session to avoid having to check database
         isAdmin = "1"
+        session['isAdmin'] = True
     # query the database to see if there is a matching username and password
     if username == "" or pw == "":
         flash("Invalid username/password.")
@@ -52,6 +54,7 @@ def login():
     # valid login and pw
     if tryToLoginDict['response'] == 0:
         session['uid'] = tryToLoginDict['uid']
+        session['name'] = tryToLoginDict['name']
         return render_template('search.html', loginbanner = "Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
     # incorrect pw entered
     # if the username exists in the database but the password is wrong,
@@ -64,7 +67,8 @@ def login():
     # creating a new user with entered username and pw
     else:
         session['uid'] = tryToLoginDict['uid']
-        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict["name"]), courses=dummyCourses)
+        session['username'] = tryToLoginDict['name']
+        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
     
     return redirect(url_for('homePage'))
 
@@ -72,6 +76,9 @@ def login():
 def search():
     """Function for the search bar in the webpage. Displays results
     similar to the input that user typed into the search bar."""
+    loginbanner = ""
+    if 'name' in session:
+        loginbanner = "Logged in as " + session['name']
     
     conn = courseBrowser.getConn('c9')
     if request.method == 'POST':
@@ -84,7 +91,7 @@ def search():
         prof = request.form.get('professor_filter', "")
         
     courses = courseBrowser.getSearchResults(conn, searchterm, semester, prof)
-    return render_template('search.html', courses=courses)
+    return render_template('search.html', courses=courses, loginbanner=loginbanner)
 
 # I don't think we need this anymore, but I'm keeping this here just in case
 # @app.route('/updateSearch', methods=['POST'])
@@ -118,7 +125,8 @@ def createPost(cid):
         # get information about particular course
         courseInfo = courseBrowser.getInfoAboutCourse(conn, cid)
         pastPosts = courseBrowser.get_past_posts(conn, cid)
-        return render_template('post.html', course = courseInfo, rows = pastPosts)
+        loginbanner = "Logged in as " + session['name']
+        return render_template('post.html', course = courseInfo, rows = pastPosts, loginbanner=loginbanner)
 
 @app.route('/editPosts/', methods=['GET', 'POST'])
 def editPosts():  
@@ -211,6 +219,54 @@ def rateCourse():
 #     except:
 #         return jsonify({"avg_rating": "None", "avg_hours": "None"})
     
+    
+@app.route('/delete', methods=['GET', 'POST']) 
+def delete():
+    """ users can delete their posts """
+    conn = courseBrowser.getConn('c9')
+    loginbanner = ""
+    if 'uid' in session:
+        uid = session['uid']
+        loginbanner="Logged in as " + session['name']
+        
+        if (request.method == 'POST'):
+            print(request.form.getlist('coursePost'))
+            deleteList = request.form.getlist('coursePost')
+            for cid in deleteList:
+                courseBrowser.deletePost(conn, session['uid'], cid)
+            postsDict = courseBrowser.getAllPosts(conn, session['uid'])
+            return render_template('delete.html', rows = postsDict, loginbanner="Logged in as " + session['name'])
+        
+        postsDict = courseBrowser.getAllPosts(conn, uid)
+        if postsDict is None:
+            flash('You have made 0 posts. You need to create a post first before you can delete it.')
+            return redirect(request.referrer)
+        else:
+            return render_template('delete.html', rows = postsDict, loginbanner=loginbanner)
+    else:
+        flash('You need to login before deleting posts.')
+        return redirect(url_for('homePage'))
+        
+    
+@app.route('/manageCourses', methods=['GET'])
+def manageCourses():
+    if 'uid' in session:
+        if session['isAdmin']:
+            loginbanner = "Logged in as " + session['name']
+            courses = courseBrowser.getSearchResults(conn, "", "", "")
+            return render_template('manageCourses.html', loginbanner=loginbanner, courses=courses)
+    flash("You need to be logged in as an administrator in order to manage courses.")
+    return redirect(url_for('homePage'))
+    
+@app.route('/editCourse/<cid>', methods=['GET', 'POST'])
+def editCourse(cid):
+    if 'uid' in session:
+        if session['isAdmin']:
+            loginbanner = "Logged in as " + session['name']
+            course = courseBrowser.getInfoAboutCourse(conn, cid)
+            return render_template('editCourse.html', loginbanner=loginbanner, course = course)
+    flash("You need to be logged in as an administrator in order to manage courses.")
+    return redirect(url_for('homePage'))
     
 #we need a main init function
 if __name__ == '__main__':

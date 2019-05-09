@@ -48,7 +48,6 @@ def getUser(conn, username, pw, isAdmin):
     curs.execute('''select * from users where name = %s''', [username])
     userDict = curs.fetchone()
     print("searching for user in the database...")
-    print(userDict)
     if userDict is not None:
         hashedPW = bcrypt.hashpw(pw.encode('utf-8'), userDict['hashedPW'].encode('utf-8'))
         # user and password match what is in the database
@@ -132,7 +131,6 @@ def get_past_posts(conn, cid):
     curs.execute('select name, entered, rating, comments, hours from posts inner join users where cid = %s and posts.uid = users.uid', [cid])
     return curs.fetchall()
     
-<<<<<<< HEAD
 def getUserPastPosts(conn, uid):
     '''Return a list of a given users previous posts'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
@@ -145,11 +143,19 @@ def updateSearch(conn, semester):
     print("SEMESTER: " + str(semester))
     curs.execute('select name, semester from courses where semester = %s', [semester])
     return curs.fetchall()
-=======
-# def updateSearch(conn, semester):
-#     '''Returns the name and semester of all courses for a given fall/spring semester and year.'''
-#     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-#     print("SEMESTER: " + str(semester))
-#     curs.execute('select name, semester from courses where semester = %s', [semester])
-#     return curs.fetchall()
->>>>>>> 5ceef227904786c0185d4b7afb630aaa8e8b6132
+    
+def getAllPosts(conn, uid):
+    """Returns all posts for a given uid"""
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('select courses.name, posts.cid, posts.hours, posts.rating, posts.entered, posts.comments from posts inner join courses on posts.cid = courses.cid where posts.uid = %s order by hours desc', (uid,))
+    postsDict = curs.fetchall()
+    return postsDict
+    
+def deletePost(conn, uid, cid):
+    """Deletes a single post made by a user"""
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    print("DELETING THE FOLLOWING POSTS")
+    print(cid)
+    lock.acquire()
+    curs.execute('delete from posts where cid = %s and uid = %s', [cid, uid])
+    lock.release()
