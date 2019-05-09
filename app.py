@@ -33,9 +33,16 @@ def login():
     username = request.form.get('username')
     pw = request.form.get('password')
     adminPW = request.form.get('adminPW')
+    
+    # course examples displayed after successful login
+    dummyCourses = courseBrowser.getSearchResults(conn, "", "", "")
+    
     # FOR NOW: global admin password == 'admin'
     isAdmin = "0"
-    if adminPW == 'admin':
+    if adminPW == 'admin': # needs to be stored more securely (this will show up on view source)
+    # if admin is not empty password, go look up in bcrypt (bcrypt it and compare it to something you read from a table)
+    # another way--have a boolean with each person's username on whether they're the administrator
+    # can put this boolean in the session to avoid having to check database
         isAdmin = "1"
     # query the database to see if there is a matching username and password
     if username == "" or pw == "":
@@ -45,7 +52,7 @@ def login():
     # valid login and pw
     if tryToLoginDict['response'] == 0:
         session['uid'] = tryToLoginDict['uid']
-        return render_template('search.html', loginbanner = "Logged in as " + str(tryToLoginDict['name']))
+        return render_template('search.html', loginbanner = "Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
     # incorrect pw entered
     # if the username exists in the database but the password is wrong,
     # flash a warning to the user and redirect
@@ -57,7 +64,7 @@ def login():
     # creating a new user with entered username and pw
     else:
         session['uid'] = tryToLoginDict['uid']
-        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict["name"]))
+        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict["name"]), courses=dummyCourses)
     
     return redirect(url_for('homePage'))
 
@@ -65,10 +72,8 @@ def login():
 def search():
     """Function for the search bar in the webpage. Displays results
     similar to the input that user typed into the search bar."""
-    # connect to database
-    conn = courseBrowser.getConn('c9')
     
-    # grab the arguments
+    conn = courseBrowser.getConn('c9')
     if request.method == 'POST':
         searchterm = request.form.get('searchterm', "")
         semester = request.form.get('semester_filter', "")
@@ -77,13 +82,9 @@ def search():
         searchterm = request.args.get('searchterm', "")
         semester = request.args.get('semester_filter', "")
         prof = request.form.get('professor_filter', "")
-    
-    print("prof: " + prof)
         
-    # get the results 
     courses = courseBrowser.getSearchResults(conn, searchterm, semester, prof)
-    
-    return render_template('search.html', courses = courses)
+    return render_template('search.html', courses=courses)
 
 # I don't think we need this anymore, but I'm keeping this here just in case
 # @app.route('/updateSearch', methods=['POST'])

@@ -81,7 +81,7 @@ def getSearchResults(conn, input_search, input_semester, input_prof):
     name = '%' + input_search + '%'
     sem = '%' + input_semester + '%'
     prof = '%' + input_prof + '%'
-    curs.execute('select name, cid, semester, professor from courses where name like %s and semester like %s and professor like %s', [name, sem, prof])
+    curs.execute('select name, cid, semester, professor, avg_hours, avg_rating from courses where name like %s and semester like %s and professor like %s', [name, sem, prof])
     return curs.fetchall()
     
 def rate_course(conn, uid, cid, rating, hours, comments): 
