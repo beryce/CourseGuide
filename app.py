@@ -5,7 +5,6 @@ import courseBrowser
 import os
 import bcrypt
 
-
 ''' Create a connection to the c9 database. '''
 conn = MySQLdb.connect(host='localhost',
                         user='ubuntu',
@@ -40,7 +39,10 @@ def login():
     
     # FOR NOW: global admin password == 'admin'
     isAdmin = "0"
-    if adminPW == 'admin':
+    if adminPW == 'admin': # needs to be stored more securely (this will show up on view source)
+    # if admin is not empty password, go look up in bcrypt (bcrypt it and compare it to something you read from a table)
+    # another way--have a boolean with each person's username on whether they're the administrator
+    # can put this boolean in the session to avoid having to check database
         isAdmin = "1"
     # query the database to see if there is a matching username and password
     if username == "" or pw == "":
@@ -84,21 +86,22 @@ def search():
     courses = courseBrowser.getSearchResults(conn, searchterm, semester, prof)
     return render_template('search.html', courses=courses)
 
-@app.route('/updateSearch', methods=['POST'])
-def update_search():
-    """Function for the filterbar in the webpage. Displays results
-    similar to the input that user typed into the filter bar."""
-    # connect to database
-    conn = courseBrowser.getConn('c9')
+# I don't think we need this anymore, but I'm keeping this here just in case
+# @app.route('/updateSearch', methods=['POST'])
+# def update_search():
+#     """Function for the filterbar in the webpage. Displays results
+#     similar to the input that user typed into the filter bar."""
+#     # connect to database
+#     conn = courseBrowser.getConn('c9')
     
-    # grab the arguments]
-    semester = request.form.get('semester_filter', "")
-    # get the results 
-    courses = courseBrowser.updateSearch(conn, semester)
-    print("COURSES: ")
-    print(courses)
-    # return redirect(url_for('search', courses = courses))
-    return render_template('search.html', courses = courses)
+#     # grab the arguments]
+#     semester = request.form.get('semester_filter', "")
+#     # get the results 
+#     courses = courseBrowser.updateSearch(conn, semester)
+#     print("COURSES: ")
+#     print(courses)
+#     # return redirect(url_for('search', courses = courses))
+#     return render_template('search.html', courses = courses)
     
 @app.route('/createPost/<cid>', methods=['GET', 'POST'])
 def createPost(cid):
@@ -181,35 +184,35 @@ def rateCourse():
         flash('You need to login!')
     return redirect(request.referrer)
     
-@app.route('/rateCourseAjax/', methods=['POST'])   
-def rateCourseAjax():
-    """rate a selected course and update average rating and hours"""
-    try:
-        if 'uid' in session:
-            conn = courseBrowser.getConn('c9')
-            uid = session['uid']
-            cid = request.form.get('cid')
-            rating = request.form.get('stars')
-            hours = request.form.get('fname')
-            comments = request.form.get('comment')
-            if courseBrowser.rate_course(conn, uid, cid, rating, hours, comments):
-                # print out new average ratings and hours
-                avg_rating = courseBrowser.compute_avgrating(conn, cid)
-                avg_hours = courseBrowser.compute_avghours(conn, cid)
+# @app.route('/rateCourseAjax/', methods=['POST'])   
+# def rateCourseAjax():
+#     """rate a selected course and update average rating and hours"""
+#     try:
+#         if 'uid' in session:
+#             conn = courseBrowser.getConn('c9')
+#             uid = session['uid']
+#             cid = request.form.get('cid')
+#             rating = request.form.get('stars')
+#             hours = request.form.get('fname')
+#             comments = request.form.get('comment')
+#             if courseBrowser.rate_course(conn, uid, cid, rating, hours, comments):
+#                 # print out new average ratings and hours
+#                 avg_rating = courseBrowser.compute_avgrating(conn, cid)
+#                 avg_hours = courseBrowser.compute_avghours(conn, cid)
                 
-                # update average ratings and hours
-                courseBrowser.update_avgrating(conn, cid)
-                courseBrowser.update_avghours(conn, cid)
-                return jsonify({"avg_rating": avg_rating, "avg_hours": avg_hours})
-            else:
-                return jsonify({"avg_rating": "None", "avg_hours": "None"})
-        else:
-            return jsonify({"avg_rating": "None", "avg_hours": "None"})
-    except:
-        return jsonify({"avg_rating": "None", "avg_hours": "None"})
+#                 # update average ratings and hours
+#                 courseBrowser.update_avgrating(conn, cid)
+#                 courseBrowser.update_avghours(conn, cid)
+#                 return jsonify({"avg_rating": avg_rating, "avg_hours": avg_hours})
+#             else:
+#                 return jsonify({"avg_rating": "None", "avg_hours": "None"})
+#         else:
+#             return jsonify({"avg_rating": "None", "avg_hours": "None"})
+#     except:
+#         return jsonify({"avg_rating": "None", "avg_hours": "None"})
     
     
 #we need a main init function
 if __name__ == '__main__':
     app.debug = True
-    app.run('0.0.0.0', 8081)
+    app.run('0.0.0.0', 8082)
