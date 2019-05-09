@@ -106,9 +106,7 @@ def createPost(cid):
     review for a particular course"""
     #courseAndSemester formatted like this: ECON102-F17
     
-    # connect to database 
     conn = courseBrowser.getConn('c9')
-
     uid = session.get('uid', False)
     if not uid:
         flash("Sorry, you have to log in before writing a review.")
@@ -116,8 +114,19 @@ def createPost(cid):
     else:
         # get information about particular course
         courseInfo = courseBrowser.getInfoAboutCourse(conn, cid)
-        pastComments = courseBrowser.get_past_comments(conn, cid)
-        return render_template('post.html', course = courseInfo, rows = pastComments)
+        pastPosts = courseBrowser.get_past_posts(conn, cid)
+        return render_template('post.html', course = courseInfo, rows = pastPosts)
+
+@app.route('/editPosts/', methods=['GET', 'POST'])
+def editPosts():  
+    """Show a user's previous posts only after a user has successfully logged in"""
+    conn = courseBrowser.getConn('c9')
+    uid = session.get('uid', False)
+    if not uid:
+        return redirect(url_for('homePage'))
+    else:
+        posts = courseBrowser.getUserPastPosts(conn, uid)
+        return render_template('allPosts.html', posts = posts)
     
 @app.route('/insertCourse', methods = ["POST"])
 def insertCourse():

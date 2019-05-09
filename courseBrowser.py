@@ -125,11 +125,17 @@ def update_avghours(conn, cid):
     curs.execute('update courses set avg_hours=%s where cid=%s',(avghours, cid))
     return curs.fetchall()
     
-def get_past_comments(conn, cid):
+def get_past_posts(conn, cid):
     '''Show the rating, time stamp, comments, and hours other people entered in the past 
     for a particular course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('select name, entered, rating, comments, hours from posts inner join users where cid = %s and posts.uid = users.uid', [cid])
+    return curs.fetchall()
+    
+def getUserPastPosts(conn, uid):
+    '''Return a list of a given users previous posts'''
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('select pid, usrs.name, entered, rating, comments, hours, cs.name as cName from posts inner join users as usrs inner join courses as cs where posts.uid = %s and posts.uid = usrs.uid and posts.cid = cs.cid', [uid])
     return curs.fetchall()
     
 def updateSearch(conn, semester):
