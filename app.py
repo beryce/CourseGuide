@@ -1,23 +1,45 @@
-from flask import (Flask, url_for, render_template, request, redirect, flash, session, json, jsonify)
+from flask import (Flask, url_for, render_template, request, redirect, flash, session, json, jsonify, send_from_directory, Response)
 import MySQLdb
 import math, random, string
 import courseBrowser
 import os
 import bcrypt
+import imghdr
+from werkzeug import secure_filename
 
-''' Create a connection to the c9 database. '''
-conn = MySQLdb.connect(host='localhost',
-                        user='ubuntu',
-                        passwd='',
-                        db='c9')
-curs = conn.cursor()
+# ''' Create a connection to the c9 database. '''
+# conn = MySQLdb.connect(host='localhost',
+#                         user='ubuntu',
+#                         passwd='',
+#                         db='c9')
+# curs = conn.cursor()
 app = Flask(__name__)
 
 app.secret_key = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
 
+# This gets us better error messages for certain common request errors
+app.config['TRAP_BAD_REQUEST_ERRORS'] = True
+
+app.config['UPLOADS'] = 'uploads'
+app.config['MAX_UPLOAD'] = 256000
+
+def getConn(db):
+    conn = MySQLdb.connect(host='localhost',user='ubuntu',passwd='',db=db)
+    conn.autocommit(True)
+    return conn
+
 ''' Route for a home page and renders the home template.'''
 @app.route('/')
 def homePage():
+    # conn = getConn('c9')
+    return render_template('index.html')
+    
+@app.route('/logout/')
+def logout():
+    # conn = getConn('c9')
+    session['isAdmin'] = False
+    session['uid'] = None
+    session['name'] = None
     return render_template('index.html')
 
 @app.route('/addCourse/')
@@ -55,7 +77,10 @@ def login():
     if tryToLoginDict['response'] == 0:
         session['uid'] = tryToLoginDict['uid']
         session['name'] = tryToLoginDict['name']
-        return render_template('search.html', loginbanner = "Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
+        if session['name'] is not None:
+            return render_template('search.html', loginbanner = "Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
+        else:
+            return render_template('search.html', loginbanner = "You need to log in.", courses=dummyCourses)
     # incorrect pw entered
     # if the username exists in the database but the password is wrong,
     # flash a warning to the user and redirect
@@ -68,8 +93,11 @@ def login():
     else:
         session['uid'] = tryToLoginDict['uid']
         session['username'] = tryToLoginDict['name']
-        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
-    
+        if session['name'] is not None:
+            return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
+        else:
+            return render_template('search.html', loginbanner = "You need to log in.", courses=dummyCourses)
+
     return redirect(url_for('homePage'))
 
 @app.route('/search', methods=['GET', 'POST'])
@@ -77,7 +105,7 @@ def search():
     """Function for the search bar in the webpage. Displays results
     similar to the input that user typed into the search bar."""
     loginbanner = ""
-    if 'name' in session:
+    if 'name' in session and session['name'] is not None:
         loginbanner = "Logged in as " + session['name']
     
     conn = courseBrowser.getConn('c9')
@@ -225,7 +253,7 @@ def delete():
     """ users can delete their posts """
     conn = courseBrowser.getConn('c9')
     loginbanner = ""
-    if 'uid' in session:
+    if 'uid' in session and session['uid'] is not None:
         uid = session['uid']
         loginbanner="Logged in as " + session['name']
         
@@ -250,6 +278,7 @@ def delete():
     
 @app.route('/manageCourses', methods=['GET'])
 def manageCourses():
+    conn = getConn('c9')
     if 'uid' in session:
         if session['isAdmin']:
             loginbanner = "Logged in as " + session['name']
@@ -260,6 +289,7 @@ def manageCourses():
     
 @app.route('/editCourse/<cid>', methods=['GET', 'POST'])
 def editCourse(cid):
+    conn = getConn('c9')
     if 'uid' in session:
         if session['isAdmin']:
             loginbanner = "Logged in as " + session['name']
@@ -267,6 +297,38 @@ def editCourse(cid):
             return render_template('editCourse.html', loginbanner=loginbanner, course = course)
     flash("You need to be logged in as an administrator in order to manage courses.")
     return redirect(url_for('homePage'))
+
+@app.route('/upload/', methods=["GET", "POST"])
+def file_upload():
+    if request.method == 'GET':
+        return render_template('form.html',src='',nm='')
+    else:
+        try:
+            # nm = int(request.form['nm']) # may throw error
+            f = request.files['file']
+            fsize = os.fstat(f.stream.fileno()).st_size
+            print 'file size is ',fsize
+            if fsize > app.config['MAX_UPLOAD']:
+                raise Exception('File is too big')
+            mime_type = imghdr.what(f)
+            if mime_type.lower() not in ['jpeg','gif','png']:
+                raise Exception('Not a JPEG, GIF or PNG: {}'.format(mime_type))
+            filename = secure_filename('{}'.format(mime_type))
+            pathname = os.path.join(app.config['UPLOADS'],filename)
+            f.save(pathname)
+            flash('Upload successful')
+            conn = getConn('c9')
+            curs = conn.cursor()
+            # curs.execute('''insert into picfile(nm,filename) values (%s,%s)
+            #                 on duplicate key update filename = %s''',
+            #              [nm, filename, filename])
+            # return render_template('form.html',
+            #                       src=url_for('pic',nm=nm),
+            #                       nm=nm)
+            return redirect(request.referrer)
+        except Exception as err:
+            flash('Upload failed {why}'.format(why=err))
+            return redirect(request.referrer)
     
 #we need a main init function
 if __name__ == '__main__':
