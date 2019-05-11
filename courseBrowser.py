@@ -32,6 +32,18 @@ def insertCourse(conn, professor, name, semester):
         didInsert = True
     lock.release()
     return didInsert
+    
+def updateCourseProf(conn, cid, professor):
+    """Updates the professor of a specific course given the cid."""
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    lock.acquire()
+    print("updating course in COURSE BROWSER...")
+    curs.execute('update courses set professor=%s where cid = %s', [professor, cid])
+    lock.release()
+    ret = getInfoAboutCourse(conn, cid)
+    print("UPDATED COURSE INFO")
+    print(ret)
+    return ret
 
 def getInfoAboutCourse(conn, cid):
     """Gets information about a PARTICULAR couse."""
@@ -158,4 +170,13 @@ def deletePost(conn, uid, cid):
     print(cid)
     lock.acquire()
     curs.execute('delete from posts where cid = %s and uid = %s', [cid, uid])
+    lock.release()
+    
+def deleteCourse(conn, cid):
+    """Deletes a single course listing and all posts associated with it"""
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    print("DELETING THE FOLLOWING COURSES")
+    print(cid)
+    lock.acquire()
+    curs.execute('delete from courses where cid = %s', [cid])
     lock.release()

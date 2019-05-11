@@ -7,13 +7,14 @@
     {% endblock %}
     
     {% block posts %}
+    <form id="editPost" method="post" action="{{url_for('editCourse', cid=course.cid)}}">
         <h1>Showing Results For: {{ course.name }} ({{ course.semester }})</h1>
-            <h2>Professor: {{ course.professor }}</h2>
-            
+            <h2>Professor: <input type="text" name="newProf" placeholder="{{ course.professor }}"></h2>
             <div id="statistics">
                 <h2 id="avgrating">Overall rating: {{ course.avg_rating }}</h2>
                 <h2 id="avghours">Avg number of hours spent: {{ course.avg_hours }}</h2>
             </div>
+    </form>
     {% endblock %}
 
 

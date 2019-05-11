@@ -7,8 +7,7 @@
     {% endblock %}
     
     {% block past_posts %}
-        <table id="courses-list">
-    <tbody>
+    <table id="courses-list">
     <tr>
         <th>Class name</th>
         <th>Semester</th>
@@ -16,17 +15,23 @@
         <th>Average Hours</th>
         <th>Average Rating</th>
     </tr>
-
-    {%for course in courses%}
-        <tr data-cid={{course.cid}}>
-        <td class="search_class_name"><a href = {{ url_for('editCourse', cid = course.cid) }}>{{course.name}}</a></td>
-        <td class="search_class_semester">{{course.semester}}</td>
-        <td class="search_class_professor">{{course.professor}}</td>
-        <td class="search_class_professor">{{course.avg_hours}}</td>
-        <td class="search_class_professor">{{course.avg_rating}}</td>
-    </tr>
-    {% endfor %}
-</table>
+    
+    <form action="/manageCourses" method="post">
+        
+        {% for course in courses %}
+            <tr data-cid={{ course.cid }}>
+                <td class="search_class_name"><a href = {{ url_for('editCourse', cid = course.cid) }}>
+                    <input type="checkbox" name="deleteCourse" value={{ course.cid }}>{{ course.name }}</a></td>
+                <td class="search_class_semester">{{ course.semester }}</td>
+                <td class="search_class_professor">{{ course.professor }}</td>
+                <td class="search_class_professor">{{ course.avg_hours }}</td>
+                <td class="search_class_professor">{{ course.avg_rating }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <br>
+        <input type="submit" value="Delete selected courses">
+    </form>
     {% endblock %}
 
 

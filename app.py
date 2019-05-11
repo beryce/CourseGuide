@@ -248,12 +248,22 @@ def delete():
         return redirect(url_for('homePage'))
         
     
-@app.route('/manageCourses', methods=['GET'])
+@app.route('/manageCourses', methods=['GET', 'POST'])
 def manageCourses():
+    conn = courseBrowser.getConn('c9')
+    loginbanner = ""
     if 'uid' in session:
         if session['isAdmin']:
             loginbanner = "Logged in as " + session['name']
+            
+            if (request.method == 'POST'):
+                print("GOT A POST REQUEST")
+                print(request.form.getlist('deleteCourse'))
+                deleteList = request.form.getlist('deleteCourse')
+                for cid in deleteList:
+                    courseBrowser.deleteCourse(conn, cid)
             courses = courseBrowser.getSearchResults(conn, "", "", "")
+
             return render_template('manageCourses.html', loginbanner=loginbanner, courses=courses)
     flash("You need to be logged in as an administrator in order to manage courses.")
     return redirect(url_for('homePage'))
@@ -263,6 +273,12 @@ def editCourse(cid):
     if 'uid' in session:
         if session['isAdmin']:
             loginbanner = "Logged in as " + session['name']
+            
+            if (request.method == 'POST'):
+                professor = request.form.get('newProf').upper()
+                course = courseBrowser.updateCourseProf(conn, cid, professor)
+                return render_template('editCourse.html', loginbanner=loginbanner, course = course)
+            
             course = courseBrowser.getInfoAboutCourse(conn, cid)
             return render_template('editCourse.html', loginbanner=loginbanner, course = course)
     flash("You need to be logged in as an administrator in order to manage courses.")
