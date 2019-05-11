@@ -20,7 +20,7 @@ app.secret_key = ''.join([random.choice(string.ascii_letters + string.digits) fo
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
-app.config['UPLOADS'] = 'uploads'
+# app.config['UPLOADS'] = 'uploads'
 app.config['MAX_UPLOAD'] = 256000
 
 def getConn(db):
@@ -34,13 +34,13 @@ def homePage():
     # conn = getConn('c9')
     return render_template('index.html')
     
-@app.route('/logout/')
-def logout():
-    # conn = getConn('c9')
-    session['isAdmin'] = False
-    session['uid'] = None
-    session['name'] = None
-    return render_template('index.html')
+# @app.route('/logout/')
+# def logout():
+#     # conn = getConn('c9')
+#     session['isAdmin'] = False
+#     session['uid'] = None
+#     session['name'] = None
+#     return render_template('index.html')
 
 @app.route('/addCourse/')
 def add_course():
@@ -77,10 +77,7 @@ def login():
     if tryToLoginDict['response'] == 0:
         session['uid'] = tryToLoginDict['uid']
         session['name'] = tryToLoginDict['name']
-        if session['name'] is not None:
-            return render_template('search.html', loginbanner = "Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
-        else:
-            return render_template('search.html', loginbanner = "You need to log in.", courses=dummyCourses)
+        return render_template('search.html', loginbanner = "Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
     # incorrect pw entered
     # if the username exists in the database but the password is wrong,
     # flash a warning to the user and redirect
@@ -93,10 +90,7 @@ def login():
     else:
         session['uid'] = tryToLoginDict['uid']
         session['username'] = tryToLoginDict['name']
-        if session['name'] is not None:
-            return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
-        else:
-            return render_template('search.html', loginbanner = "You need to log in.", courses=dummyCourses)
+        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
 
     return redirect(url_for('homePage'))
 
@@ -105,7 +99,7 @@ def search():
     """Function for the search bar in the webpage. Displays results
     similar to the input that user typed into the search bar."""
     loginbanner = ""
-    if 'name' in session and session['name'] is not None:
+    if 'name' in session:
         loginbanner = "Logged in as " + session['name']
     
     conn = courseBrowser.getConn('c9')
@@ -120,23 +114,6 @@ def search():
         
     courses = courseBrowser.getSearchResults(conn, searchterm, semester, prof)
     return render_template('search.html', courses=courses, loginbanner=loginbanner)
-
-# I don't think we need this anymore, but I'm keeping this here just in case
-# @app.route('/updateSearch', methods=['POST'])
-# def update_search():
-#     """Function for the filterbar in the webpage. Displays results
-#     similar to the input that user typed into the filter bar."""
-#     # connect to database
-#     conn = courseBrowser.getConn('c9')
-    
-#     # grab the arguments]
-#     semester = request.form.get('semester_filter', "")
-#     # get the results 
-#     courses = courseBrowser.updateSearch(conn, semester)
-#     print("COURSES: ")
-#     print(courses)
-#     # return redirect(url_for('search', courses = courses))
-#     return render_template('search.html', courses = courses)
     
 @app.route('/createPost/<cid>', methods=['GET', 'POST'])
 def createPost(cid):
@@ -300,31 +277,40 @@ def editCourse(cid):
 
 @app.route('/upload/', methods=["GET", "POST"])
 def file_upload():
+    conn = getConn('c9')
+    # if request.method == 'POST':
+    #   f = request.files['file']
+    #   cid = request.form.get('cid')
+    #   filename = secure_filename(f.filename)
+    #   f.save(filename)
+    #   courseBrowser.insertFile(conn, session['uid'], filename, cid)
+    #   flash('file uploaded successfully')
+    #   return redirect(request.referrer)
+		
     if request.method == 'GET':
         return render_template('form.html',src='',nm='')
     else:
         try:
-            # nm = int(request.form['nm']) # may throw error
             f = request.files['file']
             fsize = os.fstat(f.stream.fileno()).st_size
             print 'file size is ',fsize
             if fsize > app.config['MAX_UPLOAD']:
                 raise Exception('File is too big')
+            print("I AM PAST CONDITIONAL")
             mime_type = imghdr.what(f)
+            print("ENTERING NEXT CONDITIONAL")
             if mime_type.lower() not in ['jpeg','gif','png']:
                 raise Exception('Not a JPEG, GIF or PNG: {}'.format(mime_type))
             filename = secure_filename('{}'.format(mime_type))
-            pathname = os.path.join(app.config['UPLOADS'],filename)
+            print("GETTING FILENAME")
+            filename = secure_filename(f.filename)
+            pathname = filename
+            print("pathname is: ")
+            print(pathname)
             f.save(pathname)
+            cid = request.form.get('cid')
+            courseBrowser.insertFile(conn, session['uid'], filename, cid)
             flash('Upload successful')
-            conn = getConn('c9')
-            curs = conn.cursor()
-            # curs.execute('''insert into picfile(nm,filename) values (%s,%s)
-            #                 on duplicate key update filename = %s''',
-            #              [nm, filename, filename])
-            # return render_template('form.html',
-            #                       src=url_for('pic',nm=nm),
-            #                       nm=nm)
             return redirect(request.referrer)
         except Exception as err:
             flash('Upload failed {why}'.format(why=err))
@@ -333,4 +319,4 @@ def file_upload():
 #we need a main init function
 if __name__ == '__main__':
     app.debug = True
-    app.run('0.0.0.0', 8082)
+    app.run('0.0.0.0', 8081)
