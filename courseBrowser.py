@@ -87,10 +87,8 @@ def getSearchResults(conn, input_search, input_semester, input_prof):
 def rate_course(conn, uid, cid, rating, hours, comments): 
     '''insert or update the user's rating for a course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    if post_exists(conn, uid, cid):
-        curs.execute('update posts set rating=%s,hours=%s,comments=%s where uid=%s and cid=%s',(rating,hours,comments,uid,cid))
-    else:
-        curs.execute('insert into posts(uid, cid, rating, comments, hours) values (%s, %s, %s, %s, %s)',(uid,cid,rating,comments,hours))
+    curs.execute('insert into posts(uid, cid, rating, comments, hours) values (%s, %s, %s, %s, %s) on duplicate key update uid=%s,cid=%s,rating=%s,hours=%s,comments=%s', 
+    (uid, cid, rating, hours, comments))
     return True    
     
 def post_exists(conn, uid, cid):
@@ -132,24 +130,9 @@ def get_past_posts(conn, cid):
     curs.execute('select name, entered, rating, comments, hours from posts inner join users where cid = %s and posts.uid = users.uid', [cid])
     return curs.fetchall()
     
-<<<<<<< HEAD
 def getUserPastPosts(conn, uid):
     '''Return a list of a given users previous posts'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select pid, usrs.name, entered, rating, comments, hours, cs.name as cName from posts inner join users as usrs inner join courses as cs where posts.uid = %s and posts.uid = usrs.uid and posts.cid = cs.cid', [uid])
+    curs.execute('select pid, posts.cid as courseId, usrs.name, entered, rating, comments, hours, cs.name as cName from posts inner join users as usrs inner join courses as cs where posts.uid = %s and posts.uid = usrs.uid and posts.cid = cs.cid', [uid])
     return curs.fetchall()
-    
-def updateSearch(conn, semester):
-    '''Returns the name and semester of all courses for a given fall/spring semester and year.'''
-    curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    print("SEMESTER: " + str(semester))
-    curs.execute('select name, semester from courses where semester = %s', [semester])
-    return curs.fetchall()
-=======
-# def updateSearch(conn, semester):
-#     '''Returns the name and semester of all courses for a given fall/spring semester and year.'''
-#     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-#     print("SEMESTER: " + str(semester))
-#     curs.execute('select name, semester from courses where semester = %s', [semester])
-#     return curs.fetchall()
->>>>>>> 5ceef227904786c0185d4b7afb630aaa8e8b6132
+

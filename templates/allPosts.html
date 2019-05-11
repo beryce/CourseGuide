@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 <body>
-{% block past_posts %}
+{% block allPosts %}
 <h2>Previous Posts</h2>
 <table id="past-posts">
     <tbody>
@@ -10,17 +10,21 @@
         <th>Rating</th>
         <th>Hours Spent</th>
         <th>Comment</th>
+        <th>Edit Post</th>
     </tr>
 
     {%for post in posts%}
         <tr post-pid={{post.pid}}>
         <!--<td class="name">{{post.name}} at {{post.entered}}</td>-->
-        <td class="course_num">{{post.cName}}</td>
+        <!--<td class="course_id">{{post.courseId}}</td>-->
+        <td class="course_name">{{post.cName}}</td>
         <td class="rating">{{post.rating}}</td>
         <td class="hours">{{post.hours}}</td>
         <td class="comments">{{post.comments}}</td>
+        <td><button class="edit-post-button">edit this</button></td>
     </tr>
     {% endfor %}
 </table>
 {% endblock %}
 </body>
+
