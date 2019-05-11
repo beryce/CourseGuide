@@ -180,3 +180,11 @@ def deleteCourse(conn, cid):
     lock.acquire()
     curs.execute('delete from courses where cid = %s', [cid])
     lock.release()
+
+def insertFile(conn, uid, filename, cid):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    print("INSERTING FILE")
+    curs.execute('''insert into posts(filename) values (%s)
+                on duplicate key update filename = %s and uid = %s and cid = %s''',
+                [filename, uid, cid])
+    print("FILE INSERTED")
