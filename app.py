@@ -195,7 +195,7 @@ def rateCourse():
     else:
         flash('You need to login!')
     return redirect(request.referrer)
-    
+
 @app.route('/delete', methods=['GET', 'POST']) 
 def delete():
     """ users can delete their posts """

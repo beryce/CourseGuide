@@ -152,7 +152,7 @@ def insertFile(conn, pid, filename):
     curs.execute('''insert into picfile(pid,filename) values (%s,%s)
                 on duplicate key update filename = %s''',
                 [pid, filename, filename])
-    
+                
 # same as getUserPastPosts --delete getUserPastPosts
 def getAllPosts(conn, uid):
     """Returns all posts for a given uid"""
