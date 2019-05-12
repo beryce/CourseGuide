@@ -227,7 +227,7 @@ def rateCourse():
     
 @app.route('/delete', methods=['GET', 'POST']) 
 def delete():
-    """ users can delete their posts """
+    """ Function allows users can delete their posts. """
     conn = courseBrowser.getConn('c9')
     loginbanner = ""
     if 'uid' in session and session['uid'] is not None:
@@ -240,6 +240,7 @@ def delete():
             for cid in deleteList:
                 courseBrowser.deletePost(conn, session['uid'], cid)
             postsDict = courseBrowser.getAllPosts(conn, session['uid'])
+            flash('Posts successfully deleted.')
             return render_template('delete.html', rows = postsDict, loginbanner="Logged in as " + session['name'])
         
         postsDict = courseBrowser.getAllPosts(conn, uid)
@@ -255,6 +256,7 @@ def delete():
     
 @app.route('/manageCourses', methods=['GET', 'POST'])
 def manageCourses():
+    """Function allows admins to delete courses."""
     conn = courseBrowser.getConn('c9')
     loginbanner = ""
     conn = getConn('c9')
@@ -263,11 +265,10 @@ def manageCourses():
             loginbanner = "Logged in as " + session['name']
             
             if (request.method == 'POST'):
-                print("GOT A POST REQUEST")
-                print(request.form.getlist('deleteCourse'))
                 deleteList = request.form.getlist('deleteCourse')
                 for cid in deleteList:
                     courseBrowser.deleteCourse(conn, cid)
+                flash('Courses successfullyl deleted.')
             courses = courseBrowser.getSearchResults(conn, "", "", "")
 
             return render_template('manageCourses.html', loginbanner=loginbanner, courses=courses)
@@ -276,6 +277,7 @@ def manageCourses():
     
 @app.route('/editCourse/<cid>', methods=['GET', 'POST'])
 def editCourse(cid):
+    """Function allows admins to change the professor of a specific course."""
     conn = getConn('c9')
     if 'uid' in session:
         if session['isAdmin']:
@@ -284,6 +286,7 @@ def editCourse(cid):
             if (request.method == 'POST'):
                 professor = request.form.get('newProf').upper()
                 course = courseBrowser.updateCourseProf(conn, cid, professor)
+                flash('Course successfully updated.')
                 return render_template('editCourse.html', loginbanner=loginbanner, course = course)
             
             course = courseBrowser.getInfoAboutCourse(conn, cid)
