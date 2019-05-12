@@ -1,6 +1,6 @@
 /* global $ */
 
-var editPostUrl = "{{url_for('editPostAjax')}}"
+var editPostUrl = "{{url_for('editPostAjax')}}";
 $("#past-posts").on("click", ".edit-post-button", function(event) {
     console.log("BUTTON CLICKED")
     var post = $(this).closest("tr");

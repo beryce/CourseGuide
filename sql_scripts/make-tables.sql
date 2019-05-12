@@ -1,5 +1,6 @@
 use c9;
 
+drop table if exists picfile;
 drop table if exists posts;  -- allows us to source the batch file more than once
 drop table if exists users;  -- allows us to source the batch file more than once
 drop table if exists courses;  -- allows us to source the batch file more than once
@@ -12,8 +13,6 @@ CREATE TABLE users (
     isAdmin enum('0', '1'),
     primary key (uid)
 )
-
--- table constraints follow
 ENGINE = InnoDB;
 
 CREATE TABLE courses (
@@ -25,7 +24,6 @@ CREATE TABLE courses (
     avg_hours float,
     primary key (cid)
 )
--- table constraints follow
 ENGINE = InnoDB;
 
 CREATE TABLE posts (
@@ -47,5 +45,12 @@ CREATE TABLE posts (
     
     primary key (pid)
 )
--- table constraints follow
 ENGINE = InnoDB;
+
+create table picfile (
+    pid int primary key,
+    filename varchar(50),
+    foreign key (pid) references posts(pid) on delete cascade on update cascade
+)
+ENGINE = InnoDB;
+

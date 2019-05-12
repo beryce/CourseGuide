@@ -87,8 +87,8 @@ def getSearchResults(conn, input_search, input_semester, input_prof):
 def rate_course(conn, uid, cid, rating, hours, comments): 
     '''insert or update the user's rating for a course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('insert into posts(uid, cid, rating, comments, hours) values (%s, %s, %s, %s, %s) on duplicate key update uid=%s,cid=%s,rating=%s,hours=%s,comments=%s', 
-    (uid, cid, rating, hours, comments))
+    curs.execute('insert into posts(uid, cid, rating, hours, comments) values (%s, %s, %s, %s, %s) on duplicate key update uid=%s,cid=%s,rating=%s,hours=%s,comments=%s', 
+    (uid, cid, rating, hours, comments,uid, cid, rating, hours, comments))
     return True    
     
 def post_exists(conn, uid, cid):
@@ -135,4 +135,12 @@ def getUserPastPosts(conn, uid):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('select pid, posts.cid as courseId, usrs.name, entered, rating, comments, hours, cs.name as cName from posts inner join users as usrs inner join courses as cs where posts.uid = %s and posts.uid = usrs.uid and posts.cid = cs.cid', [uid])
     return curs.fetchall()
+
+def insertFile(conn, pid, filename):
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    print("INSERTING FILE")
+    curs.execute('''insert into picfile(pid,filename) values (%s,%s)
+                on duplicate key update filename = %s''',
+                [pid, filename, filename])
+    print("FILE INSERTED")
 

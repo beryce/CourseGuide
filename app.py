@@ -1,9 +1,11 @@
 from flask import (Flask, url_for, render_template, request, redirect, flash, session, json, jsonify)
+from werkzeug import secure_filename
 import MySQLdb
 import math, random, string
 import courseBrowser
 import os
 import bcrypt
+import imghdr
 
 ''' Create a connection to the c9 database. '''
 conn = MySQLdb.connect(host='localhost',
@@ -14,6 +16,9 @@ curs = conn.cursor()
 app = Flask(__name__)
 
 app.secret_key = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+
+app.config['UPLOADS'] = 'uploads'
+app.config['MAX_UPLOAD'] = 256000
 
 ''' Route for a home page and renders the home template.'''
 @app.route('/')
@@ -166,10 +171,37 @@ def rateCourse():
 
 @app.route('/editPostAjax/', methods=['POST']) 
 def editPostAjax():
-    cid  = request.args.get('courseId')
+    # cid  = request.args.get('courseId')
+    cid = 1
     print("Foooo")
     print(cid)
     return redirect(url_for('createPost', cid=cid))
+    
+@app.route('/upload/', methods=["GET", "POST"])
+def file_upload():
+    conn = courseBrowser.getConn('c9')
+    if request.method == 'GET':
+        return render_template('form.html',src='',nm='')
+    else:
+        try:
+            f = request.files['file']
+            pid = request.form.get('pid', 1)
+            fsize = os.fstat(f.stream.fileno()).st_size
+            print 'file size is ',fsize
+            if fsize > app.config['MAX_UPLOAD']:
+                raise Exception('File is too big')
+            mime_type = imghdr.what(f)
+            if mime_type.lower() not in ['jpeg','gif','png', 'pdf']:
+                raise Exception('Not a JPEG, GIF or PNG: {}'.format(mime_type))
+            filename = secure_filename('{}.{}'.format(pid, mime_type))
+            pathname = os.path.join(app.config['UPLOADS'], filename)
+            f.save(pathname)
+            courseBrowser.insertFile(conn, pid, filename)
+            flash('Upload successful')
+            return redirect(request.referrer)
+        except Exception as err:
+            flash('Upload failed {why}'.format(why=err))
+            return redirect(request.referrer)
 
 #we need a main init function
 if __name__ == '__main__':
