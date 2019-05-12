@@ -141,7 +141,10 @@ def createPost(cid):
         # get information about particular course
         courseInfo = courseBrowser.getInfoAboutCourse(conn, cid)
         pastPosts = courseBrowser.get_past_posts(conn, cid)
-        loginbanner = "Logged in as " + session['name']
+        if 'name' in session:
+            loginbanner = "Logged in as " + session['name']
+        else:
+            loginbanner = "Need to login."
         return render_template('post.html', course = courseInfo, rows = pastPosts, loginbanner=loginbanner, post=post)
 
 @app.route('/editPosts/', methods=['GET', 'POST'])
@@ -304,4 +307,4 @@ def file_upload():
 #we need a main init function
 if __name__ == '__main__':
     app.debug = True
-    app.run('0.0.0.0', 8081)
+    app.run('0.0.0.0', 8080)
