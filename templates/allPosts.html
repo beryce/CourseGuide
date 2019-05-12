@@ -23,6 +23,9 @@
         <td class="hours">{{post.hours}}</td>
         <td class="comments">{{post.comments}}</td>
         <td><form method="post" action="{{url_for('createPost', cid=post.courseId)}}" >
+            <input type="hidden" name="editPostRequest" value="True">
+            <input type="hidden" name="hours" value="{{post.hours}}">
+            <input type="hidden" name="comments" value="{{post.comments}}">
             <input type="submit" value="edit this">
             </form>
         </td>

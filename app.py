@@ -124,15 +124,25 @@ def createPost(cid):
     
     conn = courseBrowser.getConn('c9')
     uid = session.get('uid', False)
+    
+    # check to see if this is an edit post request instead of a create post request
+    isEditPostRequest = request.form.get('editPostRequest', False)
+    
     if not uid:
         flash("Sorry, you have to log in before writing a review.")
         return redirect(url_for('homePage'))
     else:
+        post = {}
+        if isEditPostRequest:
+            post = {
+                'hours': request.form.get('hours', ''),
+                'comments': request.form.get('comments', '') 
+            }
         # get information about particular course
         courseInfo = courseBrowser.getInfoAboutCourse(conn, cid)
         pastPosts = courseBrowser.get_past_posts(conn, cid)
         loginbanner = "Logged in as " + session['name']
-        return render_template('post.html', course = courseInfo, rows = pastPosts, loginbanner=loginbanner)
+        return render_template('post.html', course = courseInfo, rows = pastPosts, loginbanner=loginbanner, post=post)
 
 @app.route('/editPosts/', methods=['GET', 'POST'])
 def editPosts():  
