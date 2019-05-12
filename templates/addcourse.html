@@ -1,14 +1,10 @@
 {% extends "base.html" %}
 
 <body>
-    
-{% block title %}
-    <h2>{{ loginbanner }}</h2>
-{% endblock %}
 
 {% block addCourse %}
     <div id="insert_new_course">
-            <h3>Can't find the class you're looking for? Add it to our database!</h3></h3>
+            <h3>Can't find the class you're looking for? Add it to our database!</h3>
             <form action={{ url_for('insertCourse') }} method="POST">
               <p><label>Course name:</label>
               <input type="text" id="newcoursename" name="newcoursename" placeholder="Course name"></p>

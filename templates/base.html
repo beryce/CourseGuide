@@ -9,7 +9,7 @@
       <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}">
   </head>
   <body>
-    
+
     <div id="menu">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -17,12 +17,21 @@
         <a href={{ url_for('homePage') }} class="active">Home</a>
         <a href={{ url_for('search') }}>Search</a>
         <a href={{ url_for('add_course') }}>Add A Course</a>
-        <a href={{ url_for('editPosts') }}>Edit My Posts</a>
-        <a href="">Delete Posts</a>
-        <a href="">Manage Courses</a>
-        <a href="javascript:void(0);" class="icon" onclick="myFunction()">
-          <i class="fa fa-bars"></i>
-        </a>
+        <!--<a href={{ url_for('editPosts') }}>Edit My Posts</a>-->
+        <!--<a href={{ url_for('delete') }}>Delete Posts</a>-->
+        <!--<a href={{ url_for('manageCourses') }}>Manage Courses</a>-->
+        <!--<a href="javascript:void(0);" class="icon" onclick="myFunction()">-->
+        <!--  <i class="fa fa-bars"></i>-->
+        <!--</a>-->
+        <div class="dropdown">
+          <button class="dropbtn">My Account</button>
+          <div class="dropdown-content">
+            <a href={{ url_for('editPosts') }}>Edit Posts</a>
+            <a href={{ url_for('delete') }}>Delete Posts</a>
+            <a href={{ url_for('manageCourses') }}>Manage Courses</a>
+            <!--<a href="">My Account</a>-->
+          </div>
+        </div>
       </div>
     </div>
     
@@ -43,12 +52,15 @@
         {% endblock %}
     </div>
     
+    {% block links %}
+    {% endblock %}
+    
     {% block login %}
     {% endblock %}
     
-    {% block links%}
+    {% block loginbanner %}
+      <h4>{{ loginbanner }}</h4>
     {% endblock %}
-    
     
     {% block search %}
     {% endblock %}

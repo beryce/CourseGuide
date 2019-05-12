@@ -32,6 +32,7 @@ CREATE TABLE posts (
     rating enum('1', '2', '3', '4', '5'),
     comments varchar(1000),
     hours float not null, 
+    filename varchar(50),
     uid int not null,
     cid int not null,
     

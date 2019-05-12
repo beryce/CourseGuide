@@ -2,11 +2,9 @@
 
 <body>
 
-    <h2>{{ loginbanner }}</h2>
-
     {% block posts %}
-        <p>This button turns on/off all the JavaScript:
-        <button id="progressive_enhancement">Turn On Progressive Enhancement</button></p>
+        <!--<p>This button turns on/off all the JavaScript:-->
+        <!--<button id="progressive_enhancement">Turn On Progressive Enhancement</button></p>-->
         <h1>Showing Results For: {{ course.name }} ({{ course.semester }})</h1>
         <h2>Professor: {{ course.professor }}</h2>
         
@@ -49,16 +47,12 @@
             
         </div>
         
+        <p>Upload a file:
+        <form method="post" action={{ url_for('file_upload') }} enctype="multipart/form-data">
+            <p><label for="file"><input type="file" name="file"></label></p>
+            <p><input type="submit" value="upload"></p>
+        </form>
         
-        <!--<form method=post action="">-->
-        <!--    <p><label for="hours"># of hours spent:</label> <input type="text" name="fname"><br></p> -->
-        <!--    <input type="submit" value="Submit">-->
-        <!--</form>-->
-            
-        <!--<form id="comments" method=post action="">-->
-        <!--    <p><label for="comment">Other comments: <br><textarea name="comment" rows="5" cols="30"></textarea></label>-->
-        <!--    <p><input type="submit">-->
-        <!--</form>-->
         
         <h2>Other reviews for this class</h2>
     {% endblock %}

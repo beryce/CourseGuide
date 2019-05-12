@@ -22,7 +22,10 @@
         <td class="rating">{{post.rating}}</td>
         <td class="hours">{{post.hours}}</td>
         <td class="comments">{{post.comments}}</td>
-        <td><button class="edit-post-button">edit this</button></td>
+        <td><form method="post" action="{{url_for('createPost', cid=post.courseId)}}" >
+            <input type="submit" value="edit this">
+            </form>
+        </td>
         <td><form method="post" action={{ url_for('file_upload') }} enctype="multipart/form-data">
             <input type="hidden" name="pid" value="{{post.pid}}">
             <label for="file"><input type="file" name="file"></label>
