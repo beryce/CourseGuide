@@ -239,6 +239,8 @@ def delete():
             deleteList = request.form.getlist('coursePost')
             for cid in deleteList:
                 courseBrowser.deletePost(conn, session['uid'], cid)
+                courseBrowser.update_avgrating(conn, cid)
+                courseBrowser.update_avghours(conn, cid)
             postsDict = courseBrowser.getAllPosts(conn, session['uid'])
             flash('Posts successfully deleted.')
             return render_template('delete.html', rows = postsDict, loginbanner="Logged in as " + session['name'])
