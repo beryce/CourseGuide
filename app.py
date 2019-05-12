@@ -153,6 +153,7 @@ def editPosts():
     conn = courseBrowser.getConn('c9')
     uid = session.get('uid', False)
     if not uid:
+        flash("You need to log in before you can edit your posts.")
         return redirect(url_for('homePage'))
     else:
         posts = courseBrowser.getUserPastPosts(conn, uid)
