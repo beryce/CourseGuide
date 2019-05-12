@@ -98,8 +98,10 @@ def getSearchResults(conn, input_search, input_semester, input_prof):
 def rate_course(conn, uid, cid, rating, hours, comments): 
     '''insert or update the user's rating for a course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('insert into posts(uid, cid, rating, hours, comments) values (%s, %s, %s, %s, %s) on duplicate key update uid=%s,cid=%s,rating=%s,hours=%s,comments=%s', 
-    (uid, cid, rating, hours, comments,uid, cid, rating, hours, comments))
+    if post_exists(conn, uid, cid):
+        curs.execute('update posts set rating=%s,hours=%s,comments=%s where uid=%s and cid=%s',(rating,hours,comments,uid,cid))
+    else:
+        curs.execute('insert into posts(uid, cid, rating, comments, hours) values (%s, %s, %s, %s, %s)',(uid,cid,rating,comments,hours))
     return True    
     
 def post_exists(conn, uid, cid):
