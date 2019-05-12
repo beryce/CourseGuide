@@ -177,6 +177,12 @@ def insertCourse():
         if (len(semester) != 3) or (semester[0]!='F' and semester[0]!='S') or (not (semester[1:].isdigit())):
             flash("Invalid semester.")
             redirect(url_for("search"))
+        elif (len(professor) <= 0):
+            flash("Must enter input for professor.")
+            redirect(url_for("search"))
+        elif len(name) <= 0:
+            flash("Must enter new course name.")
+            redirect(url_for("search"))
         else:
             if courseBrowser.insertCourse(conn, professor, name, semester):
                 flash("Course added!")
@@ -309,4 +315,4 @@ def file_upload():
 #we need a main init function
 if __name__ == '__main__':
     app.debug = True
-    app.run('0.0.0.0', 8080)
+    app.run('0.0.0.0', 8081)
