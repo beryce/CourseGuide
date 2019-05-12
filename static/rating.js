@@ -1,55 +1,21 @@
 /* global $ */
-var progressive_on = false;
-$("#progressive_enhancement").on('click', function () {
-    if(progressive_on) {
-        // turn it off
-        $("input[name=stars],input[type=submit]").show();
-        $("#progressive_enhancement").text('Turn on Progressive Enhancement');
-        progressive_on = false;
-    } else {
-        // turn it on
-        $("input[name=stars],input[type=submit]").hide();
-        $("#progressive_enhancement").text('Turn off Progressive Enhancement');
-        progressive_on = true;
-    }
-});
 
-// past code for when we did ajax on rating course
-// keeping this here for reference
-// event handler for rating button
-// $(".class-rating").on("click",
-//     function(event) {
-//         if (progressive_on) {
-//             var rating = $('input[name=stars]:checked').val();
-//             var cid = $(this).closest("input:hidden[name=cid]").val();
-//             var hours = $(this).find('input[name=fname]').val();
-//             var comment = $(this).find('textarea[name=comment]').val();
-//             console.log("rating:" + rating);
-//             console.log("cid: " + cid);
-//             console.log("hours: " + hours);
-//             console.log("comment: " + comment)
-//             sendData({'rating': rating, 'hours': hours, 'cid': cid, 'comment': comment});
-//         } else {
-//             return;
-//         }
-            
-//     });
-
-// updates the ratings using response from Ajax
-// function updateRatings(obj) {
-//     console.log("Received response from back end.");
-//     var avg_hours = obj.avg_hours;
-//     var avg_rating = obj.avg_rating;
-//     console.log("avg_hours: " + avg_hours);
-//     console.log("avg_rating: " + avg_rating);
-//     $("#rate-btn").closest("#avgrating").text(avg_rating);
-//     $("#rate-btn").closest("#avghours").text(avg_hours);
-// }
-
-// // sends response using Ajax
-// function sendData(data) {
-//     console.log("Sending " + data + " to back end.");
-//     $.get("/rateCourseAjax", data, updateRatings);
+var editPostUrl = "{{url_for('editPostAjax')}}";
+$("#past-posts").on("click", ".edit-post-button", function(event) {
+    console.log("BUTTON CLICKED")
+    var post = $(this).closest("tr");
+    var postId = $(this).closest("[post-pid]").attr("post-pid");
+    var courseId = $(this).closest("[post-pid]").find(".course_id").text();
+    var courseName = $(this).closest("[post-pid]").find(".course_name").text();
+    var rating = $(this).closest("[post-pid]").find(".rating").text();
+    var hrs = $(this).closest("[post-pid]").find(".hours").text();
+    var comments = $(this).closest("[post-pid]").find(".comments").text();
+    console.log("pid " + postId);
+    console.log("cid " + courseId);
+    console.log(courseName);
+    console.log(rating);
+    console.log(hrs);
+    console.log(comments);
+    $.post(editPostUrl, {'courseId': courseId});
     
-// }
-
+});

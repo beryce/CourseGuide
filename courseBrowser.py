@@ -146,16 +146,16 @@ def get_past_posts(conn, cid):
 def getUserPastPosts(conn, uid):
     '''Return a list of a given users previous posts'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select pid, usrs.name, entered, rating, comments, hours, cs.name as cName from posts inner join users as usrs inner join courses as cs where posts.uid = %s and posts.uid = usrs.uid and posts.cid = cs.cid', [uid])
+    curs.execute('select pid, posts.cid as courseId, usrs.name, entered, rating, comments, hours, cs.name as cName from posts inner join users as usrs inner join courses as cs where posts.uid = %s and posts.uid = usrs.uid and posts.cid = cs.cid', [uid])
     return curs.fetchall()
-    
-def updateSearch(conn, semester):
-    '''Returns the name and semester of all courses for a given fall/spring semester and year.'''
+
+def insertFile(conn, pid, filename):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    print("SEMESTER: " + str(semester))
-    curs.execute('select name, semester from courses where semester = %s', [semester])
-    return curs.fetchall()
-    
+    curs.execute('''insert into picfile(pid,filename) values (%s,%s)
+                on duplicate key update filename = %s''',
+                [pid, filename, filename])
+                
+# same as getUserPastPosts --delete getUserPastPosts
 def getAllPosts(conn, uid):
     """Returns all posts for a given uid"""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
@@ -180,11 +180,3 @@ def deleteCourse(conn, cid):
     lock.acquire()
     curs.execute('delete from courses where cid = %s', [cid])
     lock.release()
-
-def insertFile(conn, uid, filename, cid):
-    curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    print("INSERTING FILE")
-    curs.execute('''insert into posts(filename) values (%s)
-                on duplicate key update filename = %s and uid = %s and cid = %s''',
-                [filename, uid, cid])
-    print("FILE INSERTED")

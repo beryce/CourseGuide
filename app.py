@@ -1,11 +1,11 @@
 from flask import (Flask, url_for, render_template, request, redirect, flash, session, json, jsonify, send_from_directory, Response)
+from werkzeug import secure_filename
 import MySQLdb
 import math, random, string
 import courseBrowser
 import os
 import bcrypt
 import imghdr
-from werkzeug import secure_filename
 
 # ''' Create a connection to the c9 database. '''
 # conn = MySQLdb.connect(host='localhost',
@@ -20,7 +20,8 @@ app.secret_key = ''.join([random.choice(string.ascii_letters + string.digits) fo
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
-# app.config['UPLOADS'] = 'uploads'
+# File uploads
+app.config['UPLOADS'] = 'uploads'
 app.config['MAX_UPLOAD'] = 256000
 
 def getConn(db):
@@ -113,25 +114,35 @@ def search():
         prof = request.form.get('professor_filter', "")
         
     courses = courseBrowser.getSearchResults(conn, searchterm, semester, prof)
+    
     return render_template('search.html', courses=courses, loginbanner=loginbanner)
     
 @app.route('/createPost/<cid>', methods=['GET', 'POST'])
 def createPost(cid):
     """Function that redirects to the review page and allows users to create a 
     review for a particular course"""
-    #courseAndSemester formatted like this: ECON102-F17
     
     conn = courseBrowser.getConn('c9')
     uid = session.get('uid', False)
+    
+    # check to see if this is an edit post request instead of a create post request
+    isEditPostRequest = request.form.get('editPostRequest', False)
+    
     if not uid:
         flash("Sorry, you have to log in before writing a review.")
         return redirect(url_for('homePage'))
     else:
+        post = {}
+        if isEditPostRequest:
+            post = {
+                'hours': request.form.get('hours', ''),
+                'comments': request.form.get('comments', '') 
+            }
         # get information about particular course
         courseInfo = courseBrowser.getInfoAboutCourse(conn, cid)
         pastPosts = courseBrowser.get_past_posts(conn, cid)
         loginbanner = "Logged in as " + session['name']
-        return render_template('post.html', course = courseInfo, rows = pastPosts, loginbanner=loginbanner)
+        return render_template('post.html', course = courseInfo, rows = pastPosts, loginbanner=loginbanner, post=post)
 
 @app.route('/editPosts/', methods=['GET', 'POST'])
 def editPosts():  
@@ -149,8 +160,6 @@ def insertCourse():
     """Inserts a new course into the database and displays it on webpage"""
     conn = courseBrowser.getConn('c9')
     
-    # print("session")
-    # print(session['uid']) ask scott for help
     uid = session.get('uid', False)
     
     # ensure that user is log in before they add a course
@@ -196,35 +205,7 @@ def rateCourse():
     else:
         flash('You need to login!')
     return redirect(request.referrer)
-    
-# @app.route('/rateCourseAjax/', methods=['POST'])   
-# def rateCourseAjax():
-#     """rate a selected course and update average rating and hours"""
-#     try:
-#         if 'uid' in session:
-#             conn = courseBrowser.getConn('c9')
-#             uid = session['uid']
-#             cid = request.form.get('cid')
-#             rating = request.form.get('stars')
-#             hours = request.form.get('fname')
-#             comments = request.form.get('comment')
-#             if courseBrowser.rate_course(conn, uid, cid, rating, hours, comments):
-#                 # print out new average ratings and hours
-#                 avg_rating = courseBrowser.compute_avgrating(conn, cid)
-#                 avg_hours = courseBrowser.compute_avghours(conn, cid)
-                
-#                 # update average ratings and hours
-#                 courseBrowser.update_avgrating(conn, cid)
-#                 courseBrowser.update_avghours(conn, cid)
-#                 return jsonify({"avg_rating": avg_rating, "avg_hours": avg_hours})
-#             else:
-#                 return jsonify({"avg_rating": "None", "avg_hours": "None"})
-#         else:
-#             return jsonify({"avg_rating": "None", "avg_hours": "None"})
-#     except:
-#         return jsonify({"avg_rating": "None", "avg_hours": "None"})
-    
-    
+
 @app.route('/delete', methods=['GET', 'POST']) 
 def delete():
     """ Function allows users can delete their posts. """
@@ -299,44 +280,29 @@ def editCourse(cid):
 @app.route('/upload/', methods=["GET", "POST"])
 def file_upload():
     conn = getConn('c9')
-    # if request.method == 'POST':
-    #   f = request.files['file']
-    #   cid = request.form.get('cid')
-    #   filename = secure_filename(f.filename)
-    #   f.save(filename)
-    #   courseBrowser.insertFile(conn, session['uid'], filename, cid)
-    #   flash('file uploaded successfully')
-    #   return redirect(request.referrer)
-		
     if request.method == 'GET':
         return render_template('form.html',src='',nm='')
     else:
         try:
             f = request.files['file']
+            pid = request.form.get('pid', 1)
             fsize = os.fstat(f.stream.fileno()).st_size
             print 'file size is ',fsize
             if fsize > app.config['MAX_UPLOAD']:
                 raise Exception('File is too big')
-            print("I AM PAST CONDITIONAL")
             mime_type = imghdr.what(f)
-            print("ENTERING NEXT CONDITIONAL")
-            if mime_type.lower() not in ['jpeg','gif','png']:
+            if mime_type.lower() not in ['jpeg','gif','png', 'pdf']:
                 raise Exception('Not a JPEG, GIF or PNG: {}'.format(mime_type))
-            filename = secure_filename('{}'.format(mime_type))
-            print("GETTING FILENAME")
-            filename = secure_filename(f.filename)
-            pathname = filename
-            print("pathname is: ")
-            print(pathname)
+            filename = secure_filename('{}.{}'.format(pid, mime_type))
+            pathname = os.path.join(app.config['UPLOADS'], filename)
             f.save(pathname)
-            cid = request.form.get('cid')
-            courseBrowser.insertFile(conn, session['uid'], filename, cid)
+            courseBrowser.insertFile(conn, pid, filename)
             flash('Upload successful')
             return redirect(request.referrer)
         except Exception as err:
             flash('Upload failed {why}'.format(why=err))
             return redirect(request.referrer)
-    
+
 #we need a main init function
 if __name__ == '__main__':
     app.debug = True
