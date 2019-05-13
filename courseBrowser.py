@@ -114,7 +114,10 @@ def compute_avgrating(conn, cid):
     '''compute and return the new average rating for given course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('select * from (select cid, avg(rating) from posts group by cid) as t where cid=%s',(cid,))
-    return curs.fetchone()['avg(rating)']
+    result = curs.fetchone()
+    if result is not None:
+        return result['avg(rating)']
+    else: return 0.0
 
 def update_avgrating(conn, cid):
     '''update the average rating for given course'''
@@ -127,7 +130,10 @@ def compute_avghours(conn, cid):
     '''compute and return the new average hours for given course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('select * from (select cid, avg(hours) from posts group by cid) as t where cid=%s', [cid])
-    return curs.fetchone()['avg(hours)']
+    result = curs.fetchone()
+    if result is not None:
+        return result['avg(hours)']
+    else: return 0.0
     
 def update_avghours(conn, cid):
     '''update the average hours for given course'''

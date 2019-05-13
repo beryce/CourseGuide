@@ -235,7 +235,6 @@ def delete():
             postsDict = courseBrowser.getAllPosts(conn, session['uid'])
             flash('Posts successfully deleted.')
             return render_template('delete.html', rows = postsDict, loginbanner="Logged in as " + session['name'])
-        
         postsDict = courseBrowser.getAllPosts(conn, uid)
         if postsDict is None:
             flash('You have made 0 posts. You need to create a post first before you can delete it.')
