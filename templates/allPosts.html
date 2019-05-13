@@ -10,6 +10,7 @@
         <th>Rating</th>
         <th>Hours Spent</th>
         <th>Comment</th>
+        <th>Files</th>
         <th>Edit Post</th>
         <th>Upload file</th>
     </tr>
@@ -22,6 +23,7 @@
         <td class="rating">{{post.rating}}</td>
         <td class="hours">{{post.hours}}</td>
         <td class="comments">{{post.comments}}</td>
+        <td class="files">{{post.filename}}</td>
         <td><form method="post" action="{{url_for('createPost', cid=post.courseId)}}" >
             <input type="hidden" name="editPostRequest" value="True">
             <input type="hidden" name="hours" value="{{post.hours}}">

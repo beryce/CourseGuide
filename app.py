@@ -91,6 +91,7 @@ def login():
     else:
         session['uid'] = tryToLoginDict['uid']
         session['username'] = tryToLoginDict['name']
+        session['name'] = tryToLoginDict['name']
         return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
 
     return redirect(url_for('homePage'))
@@ -143,8 +144,6 @@ def createPost(cid):
         pastPosts = courseBrowser.get_past_posts(conn, cid)
         if 'name' in session:
             loginbanner = "Logged in as " + session['name']
-        else:
-            loginbanner = "Need to login."
         return render_template('post.html', course = courseInfo, rows = pastPosts, loginbanner=loginbanner, post=post)
 
 @app.route('/editPosts/', methods=['GET', 'POST'])
@@ -223,7 +222,10 @@ def delete():
     loginbanner = ""
     if 'uid' in session and session['uid'] is not None:
         uid = session['uid']
-        loginbanner="Logged in as " + session['name']
+        if 'name' in session:
+            loginbanner="Logged in as " + session['name']
+        else:
+            loginbanner="Please log in."
         
         if (request.method == 'POST'):
             print(request.form.getlist('coursePost'))
@@ -260,7 +262,7 @@ def manageCourses():
                 deleteList = request.form.getlist('deleteCourse')
                 for cid in deleteList:
                     courseBrowser.deleteCourse(conn, cid)
-                flash('Courses successfullyl deleted.')
+                flash('Courses successfully deleted.')
             courses = courseBrowser.getSearchResults(conn, "", "", "")
 
             return render_template('manageCourses.html', loginbanner=loginbanner, courses=courses)
@@ -312,6 +314,15 @@ def file_upload():
             flash('Upload failed {why}'.format(why=err))
             return redirect(request.referrer)
 
+@app.route('/pic/<path>')
+def pic(path):
+    """Returns the picture associated with given pid."""
+    conn = getConn('c9')
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    return send_from_directory(app.config['UPLOADS'], path)
+    # val = send_from_directory(app.config['UPLOADS'],row['filename'])
+    # return val
+    
 #we need a main init function
 if __name__ == '__main__':
     app.debug = True

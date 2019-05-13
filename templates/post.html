@@ -55,11 +55,17 @@
     {% block past_posts %}
     <dl>
         {% for row in rows %}
-            <dt>{{row.name}} at {{row.entered}}</dt>
+            <dt>{{row.name}} at {{ row.entered }}</dt>
             <dd>
-                <li>Rating: {{row.rating}}</li>
-                <li>Hours spent: {{row.hours}}</li>
-                <li>Comment: {{row.comments}}</li>
+                <li>Rating: {{ row.rating }}</li>
+                <li>Hours spent: {{ row.hours }}</li>
+                <li>Comment: {{ row.comments }}</li>
+                {% if row.filename is none %}
+                    <li>Files: None</li>
+                {% else %}
+                    <!--<li>Other: <img src="{{ url_for('pic',path=row['filename']) }}" width="50" height="60"></li>-->
+                    <li>Files: <a href="{{ url_for('pic',path=row['filename']) }}">{{ row.filename }}</a></li>
+                {% endif %}
             </dd>
             <br>
         {% endfor %}

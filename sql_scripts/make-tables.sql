@@ -48,10 +48,10 @@ CREATE TABLE posts (
 )
 ENGINE = InnoDB;
 
-create table picfile (
-    pid int primary key,
-    filename varchar(50),
-    foreign key (pid) references posts(pid) on delete cascade on update cascade
-)
-ENGINE = InnoDB;
+-- create table picfile (
+--     pid int primary key,
+--     filename varchar(50),
+--     foreign key (pid) references posts(pid) on delete cascade on update cascade
+-- )
+-- ENGINE = InnoDB;
 

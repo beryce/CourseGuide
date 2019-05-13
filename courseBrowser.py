@@ -146,18 +146,19 @@ def get_past_posts(conn, cid):
     '''Show the rating, time stamp, comments, and hours other people entered in the past 
     for a particular course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select name, entered, rating, comments, hours from posts inner join users where cid = %s and posts.uid = users.uid', [cid])
+    curs.execute('select name, entered, rating, comments, hours, filename, pid from posts inner join users where cid = %s and posts.uid = users.uid', [cid])
     return curs.fetchall()
     
 def getUserPastPosts(conn, uid):
     '''Return a list of a given users previous posts'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select pid, posts.cid as courseId, usrs.name, entered, rating, comments, hours, cs.name as cName from posts inner join users as usrs inner join courses as cs where posts.uid = %s and posts.uid = usrs.uid and posts.cid = cs.cid', [uid])
+    curs.execute('select pid, posts.cid as courseId, usrs.name, entered, rating, comments, filename, hours, cs.name as cName from posts inner join users as usrs inner join courses as cs where posts.uid = %s and posts.uid = usrs.uid and posts.cid = cs.cid', [uid])
     return curs.fetchall()
 
 def insertFile(conn, pid, filename):
+    """Inserts a file into posts database using given file name."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('''insert into picfile(pid,filename) values (%s,%s)
+    curs.execute('''insert into posts(pid,filename) values (%s,%s)
                 on duplicate key update filename = %s''',
                 [pid, filename, filename])
                 
@@ -165,7 +166,7 @@ def insertFile(conn, pid, filename):
 def getAllPosts(conn, uid):
     """Returns all posts for a given uid"""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select courses.name, posts.cid, posts.hours, posts.rating, posts.entered, posts.comments from posts inner join courses on posts.cid = courses.cid where posts.uid = %s order by hours desc', (uid,))
+    curs.execute('select courses.name, posts.cid, posts.hours, posts.rating, posts.entered, posts.comments, posts.filename from posts inner join courses on posts.cid = courses.cid where posts.uid = %s order by hours desc', (uid,))
     postsDict = curs.fetchall()
     return postsDict
     
