@@ -35,17 +35,18 @@ def homePage():
     # conn = getConn('c9')
     return render_template('index.html')
     
-# @app.route('/logout/')
-# def logout():
-#     # conn = getConn('c9')
-#     session['isAdmin'] = False
-#     session['uid'] = None
-#     session['name'] = None
-#     return render_template('index.html')
+@app.route('/logout/', methods=['GET', 'POST'])
+def logout():
+    """Function for logging out a user."""
+    session.clear()
+    return redirect(url_for("homePage"))
 
 @app.route('/addCourse/')
 def add_course():
-    return render_template('addcourse.html')
+    loginbanner=""
+    if 'name' in session:
+        loginbanner = "Logged in as " + session['name']
+    return render_template('addcourse.html', loginbanner=loginbanner)
  
 @app.route('/login', methods=['POST'])
 def login():
@@ -155,8 +156,9 @@ def editPosts():
         flash("You need to log in before you can edit your posts.")
         return redirect(url_for('homePage'))
     else:
+        loginbanner = "Logged in as " + session['name']
         posts = courseBrowser.getUserPastPosts(conn, uid)
-        return render_template('allPosts.html', posts = posts)
+        return render_template('allPosts.html', posts = posts, loginbanner=loginbanner)
     
 @app.route('/insertCourse', methods = ["POST"])
 def insertCourse():
@@ -171,9 +173,9 @@ def insertCourse():
         return redirect(url_for('homePage'))
     else:
         # grab name and semester from form
-        name = request.form.get("newcoursename").upper()
+        name = request.form.get("newcoursename")
         semester = request.form.get("newsemester").upper().encode("utf-8")
-        professor = request.form.get("newprofessor").upper()
+        professor = request.form.get("newprofessor")
         if (len(semester) != 3) or (semester[0]!='F' and semester[0]!='S') or (not (semester[1:].isdigit())):
             flash("Invalid semester.")
             redirect(url_for("search"))
@@ -278,7 +280,7 @@ def editCourse(cid):
             loginbanner = "Logged in as " + session['name']
             
             if (request.method == 'POST'):
-                professor = request.form.get('newProf').upper()
+                professor = request.form.get('newProf')
                 course = courseBrowser.updateCourseProf(conn, cid, professor)
                 flash('Course successfully updated.')
                 return render_template('editCourse.html', loginbanner=loginbanner, course = course)
