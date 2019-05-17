@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+<body>
+
+{% block favCourses %}
+<h2>Favorite Courses:</h2>
+<table id="fav-courses">
+    <tbody>
+    <tr>
+        <th>Class name</th>
+        <th>Semester</th>
+        <th>Professor</th>
+    </tr>
+
+    {%for course in courses%}
+        <tr data-cid={{course.cid}}>
+        <td class="search_class_name"><a href = {{ url_for('createPost', cid = course.cid) }}>{{course.name}}</a></td>
+        <td class="search_class_semester">{{course.semester}}</td>
+        <td class="search_class_professor">{{course.professor}}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
+
+
+</body>
