@@ -36,7 +36,7 @@ CREATE TABLE posts (
     uid int not null,
     cid int not null,
     
-    INDEX (uid),     -- necessary for referential integrity checking
+    INDEX (uid, cid),     -- necessary for referential integrity checking
     foreign key (uid) references users(uid)
         on update cascade
         on delete cascade,

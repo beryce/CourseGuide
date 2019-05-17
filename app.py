@@ -29,12 +29,17 @@ def getConn(db):
 @app.route('/')
 def homePage():
     # conn = getConn('c9')
-    return render_template('index.html')
+    if 'name' in session:
+        loginbanner = "Logged in as " + session['name']
+        return render_template('index.html', loginbanner=loginbanner)
+    else:
+        return render_template('index.html', loginbanner="")
     
 @app.route('/logout/', methods=['GET', 'POST'])
 def logout():
     """Function for logging out a user."""
     session.clear()
+    flash("You have been logged out.")
     return redirect(url_for("homePage"))
 
 @app.route('/addCourse/')
@@ -55,23 +60,23 @@ def login():
     adminPW = request.form.get('adminPW')
     
     # course examples displayed after successful login
-    dummyCourses = courseBrowser.getSearchResults(conn, "", "", "")
+    dummyCourses = courseBrowser.getSearchResults(conn, "", "", "", "", "")
     
     # FOR NOW: global admin password == 'admin'
     isAdmin = "0"
     session['isAdmin'] = False
-    if adminPW == 'admin': # needs to be stored more securely (this will show up on github)
-    # if admin is not empty password, go look up in bcrypt (bcrypt it and compare it to something you read from a table)
-    # another way--have a boolean with each person's username on whether they're the administrator
-    # can put this boolean in the session to avoid having to check database
+    if adminPW == 'admin':
         isAdmin = "1"
         session['isAdmin'] = True
     # query the database to see if there is a matching username and password
     if username == "" or pw == "":
         flash("Invalid username/password.")
         return render_template('index.html')
+        
+        
     tryToLoginDict = courseBrowser.getUser(conn, username, pw, isAdmin)
     # valid login and pw
+    
     if tryToLoginDict['response'] == 0:
         session['uid'] = tryToLoginDict['uid']
         session['name'] = tryToLoginDict['name']
@@ -87,10 +92,6 @@ def login():
     # creating a new user with entered username and pw
     else:
         flash("Sorry, we don't recognize that account.")
-        # session['uid'] = tryToLoginDict['uid']
-        # session['username'] = tryToLoginDict['name']
-        # session['name'] = tryToLoginDict['name']
-        # return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict['name']), filterList = None, courses=dummyCourses)
 
     return redirect(url_for('homePage'))
 
@@ -107,14 +108,18 @@ def search():
         searchterm = request.form.get('searchterm', "")
         semester = request.form.get('semester_filter', "")
         prof = request.form.get('professor_filter', "")
+        filter_by = request.form.get('filter_by', "")
+        sort_by = request.form.get('sort_by', "")
     else:
         searchterm = request.args.get('searchterm', "")
         semester = request.args.get('semester_filter', "")
-        prof = request.form.get('professor_filter', "")
-        
-    courses = courseBrowser.getSearchResults(conn, searchterm, semester, prof)
-    
-    filterList = {'searchterm': searchterm, 'semester': semester, 'professor': prof}
+        prof = request.args.get('professor_filter', "")
+        filter_by = request.form.get('filter_by', "")
+        sort_by = request.args.get('sort_by', "")
+
+    courses = courseBrowser.getSearchResults(conn, searchterm, semester, prof, filter_by, sort_by)
+
+    filterList = {'searchterm': searchterm, 'semester': semester, 'professor': prof, 'filter_by': filter_by, 'sort_by': sort_by}
     
     return render_template('search.html', courses=courses, loginbanner=loginbanner, filterList=filterList)
     
@@ -126,14 +131,14 @@ def createPost(cid):
     conn = courseBrowser.getConn('c9')
     uid = session.get('uid', False)
     
-    # check to see if this is an edit post request instead of a create post request
-    isEditPostRequest = request.form.get('editPostRequest', False)
     edit_post = {'hours': "", 'comments': ""}
     
     if not uid:
         flash("Sorry, you have to log in before writing a review.")
         return redirect(url_for('homePage'))
     else:
+        # check to see if this is an edit post request instead of a create post request
+        isEditPostRequest = request.form.get('editPostRequest', False)
         post = {}
         if isEditPostRequest:
             edit_post = {
@@ -225,8 +230,8 @@ def delete():
             deleteList = request.form.getlist('coursePost')
             for cid in deleteList:
                 courseBrowser.deletePost(conn, session['uid'], cid)
-                courseBrowser.update_avgrating(conn, cid)
-                courseBrowser.update_avghours(conn, cid)
+                # courseBrowser.update_avgrating(conn, cid)
+                # courseBrowser.update_avghours(conn, cid)
             postsDict = courseBrowser.getAllPosts(conn, session['uid'])
             flash('Posts successfully deleted.')
             return render_template('delete.html', rows = postsDict, loginbanner="Logged in as " + session['name'])
@@ -256,7 +261,7 @@ def manageCourses():
                 for cid in deleteList:
                     courseBrowser.deleteCourse(conn, cid)
                 flash('Courses successfully deleted.')
-            courses = courseBrowser.getSearchResults(conn, "", "", "")
+            courses = courseBrowser.getSearchResults(conn, "", "", "", "", "")
 
             return render_template('manageCourses.html', loginbanner=loginbanner, courses=courses)
     flash("You need to be logged in as an administrator in order to manage courses.")
@@ -321,7 +326,7 @@ def createAccount():
     """Renders template for users to create an account and join."""
     return render_template('createAccount.html')
 
-@app.route('/join/', methods=['POST'])
+@app.route('/join', methods=['POST'])
 def join():
     """Function to create a new user"""
     conn = courseBrowser.getConn('c9')
@@ -330,7 +335,7 @@ def join():
     adminPW = request.form.get('adminPW')
     
     # course examples displayed after successful login
-    dummyCourses = courseBrowser.getSearchResults(conn, "", "", "")
+    dummyCourses = courseBrowser.getSearchResults(conn, "", "", "", "", "")
     
     # FOR NOW: global admin password == 'admin'
     isAdmin = "0"
@@ -357,10 +362,11 @@ def join():
     # update the database by creating a new user with that login and password information
     # creating a new user with entered username and pw
     else:
-        session['uid'] = tryToLoginDict['uid']
-        session['username'] = tryToLoginDict['name']
-        session['name'] = tryToLoginDict['name']
-        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict['name']), filterList = None, courses=dummyCourses)
+        newUser = courseBrowser.createUser(conn, username, pw, isAdmin)
+        session['uid'] = newUser['uid']
+        session['username'] = newUser['name']
+        session['name'] = newUser['name']
+        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(newUser['name']), filterList = None, courses=dummyCourses)
 
     return redirect(url_for('homePage'))
     

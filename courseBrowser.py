@@ -47,9 +47,7 @@ def updateCourseProf(conn, cid, professor):
 
 def getInfoAboutCourse(conn, cid):
     """Gets information about a PARTICULAR couse."""
-    #BUG: NEED TO INNER JOIN WITH POSTS BUT POSTS IS BEING WEIRD
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    # curs.execute('''select * from courses where cid = %s''', [cid])
     curs.execute('''select * from courses where courses.cid = %s''', [cid])
     return curs.fetchone()
     
@@ -74,17 +72,36 @@ def getUser(conn, username, pw, isAdmin):
         return userDict
     # username does not exist in the database, create new user
     else:
-        hashedPW = bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt())
-        print("attempting to insert new user into the database...")
-        lock.acquire()
-        curs.execute('''insert into users (name, hashedPW, isAdmin) values (%s, %s, %s)''', [username, hashedPW, isAdmin])
-        lock.release()
-        curs.execute('''select * from users where name = %s''', [username])
-        userDict = curs.fetchone()
-        userDict['response'] = 2
+        # userDict['username'] = ""
+        # userDict['hashedPW'] = ""
+        # userDict['response'] = 2
+        # return userDict
+        # hashedPW = bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt())
+        # print("attempting to insert new user into the database...")
+        # lock.acquire()
+        # curs.execute('''insert into users (name, hashedPW, isAdmin) values (%s, %s, %s)''', [username, hashedPW, isAdmin])
+        # lock.release()
+        # curs.execute('''select * from users where name = %s''', [username])
+        # userDict = curs.fetchone()
+        # userDict['response'] = 2
+        return {"response": 2}
+    return userDict
+    
+
+def createUser(conn, username, pw, isAdmin):
+    """Creates a new user."""
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    hashedPW = bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt())
+    print("attempting to insert new user into the database...")
+    lock.acquire()
+    curs.execute('''insert into users (name, hashedPW, isAdmin) values (%s, %s, %s)''', [username, hashedPW, isAdmin])
+    lock.release()
+    curs.execute('''select * from users where name = %s''', [username])
+    userDict = curs.fetchone()
+    userDict['response'] = 2
     return userDict
 
-def getSearchResults(conn, input_search, input_semester, input_prof):
+def getSearchResults(conn, input_search, input_semester, input_prof, filter_by, sort_by):
     """Returns the name, cid, semester for the given course name user types into search bar.
     For example, if the user types in "cs", the result will be all classes where
     there is a "cs" in the course name. """
@@ -92,7 +109,18 @@ def getSearchResults(conn, input_search, input_semester, input_prof):
     name = '%' + input_search + '%'
     sem = '%' + input_semester + '%'
     prof = '%' + input_prof + '%'
-    curs.execute('select name, cid, semester, professor, avg_hours, avg_rating from courses where name like %s and semester like %s and professor like %s', [name, sem, prof])
+    
+    if filter_by == "average rating":
+        if sort_by == "low to high":
+            curs.execute('select name, cid, semester, professor, avg_hours, avg_rating from courses where name like %s and semester like %s and professor like %s group by cid order by avg_rating asc', [name, sem, prof])
+        else:
+            curs.execute('select name, cid, semester, professor, avg_hours, avg_rating from courses where name like %s and semester like %s and professor like %s group by cid order by avg_rating desc', [name, sem, prof])
+    else:
+        if sort_by == "low to high":
+            curs.execute('select name, cid, semester, professor, avg_hours, avg_rating from courses where name like %s and semester like %s and professor like %s group by cid order by avg_hours asc', [name, sem, prof])
+        else:
+            curs.execute('select name, cid, semester, professor, avg_hours, avg_rating from courses where name like %s and semester like %s and professor like %s group by cid order by avg_hours desc', [name, sem, prof])
+    
     return curs.fetchall()
     
 def rate_course(conn, uid, cid, rating, hours, comments): 
@@ -147,7 +175,6 @@ def update_avghours(conn, cid):
     avghours = compute_avghours(conn, cid)
     curs.execute('update courses set avg_hours=%s where cid=%s',(avghours, cid))
     return curs.fetchall()
-
     
 def get_past_posts(conn, cid):
     '''Show the rating, time stamp, comments, and hours other people entered in the past 
@@ -184,6 +211,9 @@ def deletePost(conn, uid, cid):
     print(cid)
     lock.acquire()
     curs.execute('delete from posts where cid = %s and uid = %s', [cid, uid])
+    update_avgrating(conn, cid)
+    update_avghours(conn, cid)
+    
     lock.release()
     
 def deleteCourse(conn, cid):
@@ -195,30 +225,3 @@ def deleteCourse(conn, cid):
     curs.execute('delete from courses where cid = %s', [cid])
     lock.release()
     
-# def orderByHighestAvgRating(conn):
-#     """Returns a list of courses (specifically, their average rating and cid) 
-#     and orders them by highest to lowest average rating."""
-#     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-#     curs.execute('select avg_rating, cid from courses group by cid order by avg_rating desc')
-#     return curs.fetchall()
-
-# def orderByLowestAvgRating(conn):
-#     """Returns a list of courses (specifically, their average rating and cid) 
-#     and orders them by lowest to highest average rating."""
-#     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-#     curs.execute('select avg_rating, cid from courses group by cid order by avg_rating asc')
-#     return curs.fetchall()
-
-# def orderByHighestAvgHours(conn):
-#     """Returns a list of courses (specifically, their average rating and cid) 
-#     and orders them by highest to lowest average hours."""
-#     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-#     curs.execute('select avg_hours, cid from courses group by cid order by avg_hours desc')
-#     return curs.fetchall()
-    
-# def orderByLowestAvgHours(conn):
-#     """Returns a list of courses (specifically, their average rating and cid) 
-#     and orders them by highest to lowest average hours."""
-#     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-#     curs.execute('select avg_hours, cid from courses group by cid order by avg_hours asc')
-#     return curs.fetchall()

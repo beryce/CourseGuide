@@ -16,16 +16,18 @@
     <p>and/or filter by professor: </p>
     <input id="professor_filter" placeholder="Professor" name="professor_filter">
     
-    <p>and/or filter by average rating:<p>
-    <select id="filter_by_rating">
-        <option value="high_to_low_rating">high to low</option>
-        <option value="low_to_high_hours">low to high</option>
+    <p>and filter by average rating or average hours:<p>
+    <select id="filter_by" name="filter_by">
+        <option value="None" selected="selected">none</option>
+        <option value="average rating">average rating</option>
+        <option value="average hours">average hours</option>
     </select>
     
-    <p>and/or filter by average number of hours:<p>
-    <select id="filter_by_hours">
-        <option value="high_to_low_hours">high to low</option>
-        <option value="low_to_high_hours">low to high</option>
+    <p>sort by:<p>
+    <select id="sort_by" name="sort_by">
+        <option value="None" selected="selected">none</option>
+        <option value="high to low">high to low</option>
+        <option value="low to high">low to high</option>
     </select>
     <br>
     <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
@@ -34,16 +36,21 @@
 
 {% block currentSearchFilters %}
     {% if filterList is not none %}
-        {% if filterList.searchterm == "" and filterList.professor == "" and filterList.semester == "" %}
+        {% if filterList.searchterm == "" and filterList.professor == "" and filterList.semester == "" and filterList.rating_filter == "" and filterList.hours_filter == "" %}
             <p>No filters used. Displaying all results.</p>
         {% else %}
             <p>Current filters used:
             {{ filterList.searchterm }}
             {{ filterList.semester }}
-            {{ filterList.professor }}</p>
+            {{ filterList.professor }}
+            <br>
+            Filter results by: {{ filterList.filter_by }}
+            <br>
+            Sort by: {{ filterList.sort_by }}
+            </p>
         {% endif %}
     {% else %}
-        <p>Current filters used: None </p>
+        <p>No filters used</p>
     {% endif %}
     
 {% endblock %}
