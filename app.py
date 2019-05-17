@@ -18,17 +18,9 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 app.config['UPLOADS'] = 'uploads'
 app.config['MAX_UPLOAD'] = 256000
 
-# def getConn(db):
-#     '''This function connects to the database. In our project, this will connect
-#     to c9.'''
-#     conn = MySQLdb.connect(host='localhost',user='ubuntu',passwd='',db=db)
-#     conn.autocommit(True)
-#     return conn
-
 ''' Route for a home page and renders the home template.'''
 @app.route('/')
 def homePage():
-    # conn = getConn('c9')
     if 'name' in session:
         loginbanner = "Logged in as " + session['name']
         return render_template('index.html', loginbanner=loginbanner)
@@ -374,4 +366,4 @@ def join():
 #we need a main init function
 if __name__ == '__main__':
     app.debug = True
-    app.run('0.0.0.0', 8082)
+    app.run('0.0.0.0', 8081)

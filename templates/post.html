@@ -49,11 +49,7 @@
                     <p><input type="submit" id="rate_btn" value="Rate this!"></p>
                 </form>
                 
-                <form method="post" action={{ url_for('file_upload') }} enctype="multipart/form-data">
-                    <input type="hidden" name="pid" value={{ course.cid }}>
-                    <label for="file">Choose file: <input type="file" id="file" name="file"></label>
-                    <label for="upload">Upload: <input type="submit" id="upload" name="upload" value="upload"></label>
-                </form>
+                <p>To upload a file, please fill out the rate form, click submit, then visit <a href={{ url_for('editPosts') }}>the edit tab</a>.</p>
             
         </div>
     

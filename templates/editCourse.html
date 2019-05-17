@@ -2,10 +2,6 @@
 
 <body>
     
-    <!--{% block links %}-->
-    <!--<h2>{{coursename}}</h2>-->
-    <!--{% endblock %}-->
-    
     {% block posts %}
     <form id="editPost" method="post" action="{{url_for('editCourse', cid=course.cid)}}">
         <h1>Showing Results For: {{ course.name }} ({{ course.semester }})</h1>
