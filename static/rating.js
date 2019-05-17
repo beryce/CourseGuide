@@ -1,21 +1,33 @@
 /* global $ */
+/* global star_url */
+/* star_url is defined in the search.html template. */
 
-var editPostUrl = "{{url_for('editPostAjax')}}";
-$("#past-posts").on("click", ".edit-post-button", function(event) {
-    console.log("BUTTON CLICKED")
-    var post = $(this).closest("tr");
-    var postId = $(this).closest("[post-pid]").attr("post-pid");
-    var courseId = $(this).closest("[post-pid]").find(".course_id").text();
-    var courseName = $(this).closest("[post-pid]").find(".course_name").text();
-    var rating = $(this).closest("[post-pid]").find(".rating").text();
-    var hrs = $(this).closest("[post-pid]").find(".hours").text();
-    var comments = $(this).closest("[post-pid]").find(".comments").text();
-    console.log("pid " + postId);
-    console.log("cid " + courseId);
-    console.log(courseName);
-    console.log(rating);
-    console.log(hrs);
-    console.log(comments);
-    $.post(editPostUrl, {'courseId': courseId});
-    
+var uid = $("input[name=uid]").attr("value");
+$("#courses-list").on('click','.favButton', function(event) {
+    if(uid != 'False') {
+        if(event.target != this) return;
+        var cid = $(this).closest("[data-cid]").attr("data-cid");
+        var favButton = $(this).closest("[data-cid="+cid+"]").find(".favButton");
+        var favButtonText = $(this).closest("[data-cid="+cid+"]").find(".favButton").text();
+        if(favButtonText == 'Star!') {
+            // starred
+            $.post(star_url, 
+                {'cid': cid, 'isFav': 1},
+                "json");
+            favButton.text('Starred!');
+        } else {
+            // unstarred
+            $.post(star_url, 
+                {'cid': cid, 'isFav': 0},
+                "json");
+            favButton.text('Star!');
+        }
+    } else {
+        console.log("user not logged in");
+        $.post(star_url, 
+                {'cid': '', 'isFav': ''},
+                "json");
+    }
 });
+
+

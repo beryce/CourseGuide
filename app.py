@@ -78,7 +78,12 @@ def login():
     if tryToLoginDict['response'] == 0:
         session['uid'] = tryToLoginDict['uid']
         session['name'] = tryToLoginDict['name']
-        return render_template('search.html', loginbanner = "Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
+        uid = session['uid']
+        
+        # add isFav key to mark if course is starred in dummyCourses dict
+        newDummyCourses = courseBrowser.add_isFav_to_Dict(conn, dummyCourses, uid)
+                
+        return render_template('search.html', loginbanner = "Logged in as " + str(tryToLoginDict['name']), courses=newDummyCourses, uid=uid)
     # incorrect pw entered
     # if the username exists in the database but the password is wrong,
     # flash a warning to the user and redirect
@@ -91,7 +96,12 @@ def login():
     else:
         session['uid'] = tryToLoginDict['uid']
         session['username'] = tryToLoginDict['name']
-        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
+        uid = session['uid']
+        
+        # add isFav key to mark if course is starred in dummyCourses dict
+        newDummyCourses = courseBrowser.add_isFav_to_Dict(conn, dummyCourses, uid)
+        
+        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict['name']), courses=newDummyCourses, uid=uid)
 
     return redirect(url_for('homePage'))
 
@@ -113,9 +123,13 @@ def search():
         semester = request.args.get('semester_filter', "")
         prof = request.form.get('professor_filter', "")
         
+    uid = session.get('uid', False)
     courses = courseBrowser.getSearchResults(conn, searchterm, semester, prof)
     
-    return render_template('search.html', courses=courses, loginbanner=loginbanner)
+    # add isFav key to mark if course is starred in coursesdict
+    newCourses = courseBrowser.add_isFav_to_Dict(conn, courses, uid)
+    
+    return render_template('search.html', courses=newCourses, loginbanner=loginbanner, uid=uid)
     
 @app.route('/createPost/<cid>', methods=['GET', 'POST'])
 def createPost(cid):
@@ -135,6 +149,7 @@ def createPost(cid):
         post = {}
         if isEditPostRequest:
             post = {
+                'rating': request.form.get('rating', ''),
                 'hours': request.form.get('hours', ''),
                 'comments': request.form.get('comments', '') 
             }
@@ -175,7 +190,7 @@ def insertCourse():
             flash("Invalid semester.")
             redirect(url_for("search"))
         else:
-            if courseBrowser.insertCourse(conn, professor, name, semester):
+            if courseBrowser.insertCourse(conn, professor, name, semester, uid):
                 flash("Course added!")
             else:
                 flash("Uh-oh! It looks like this course already exists in our database...")
@@ -300,6 +315,31 @@ def file_upload():
         except Exception as err:
             flash('Upload failed {why}'.format(why=err))
             return redirect(request.referrer)
+
+@app.route('/favCourses/', methods=['GET', 'POST'])
+def fav_courses():
+    conn = getConn('c9')
+    if 'uid' in session:
+        uid = session.get('uid')
+        favCourses = courseBrowser.get_fav_courses(conn, uid)
+        return render_template('favCourses.html', courses = favCourses)
+        
+    flash("Sorry, you have to log in before writing a review.")
+    return redirect(url_for('homePage'))
+
+@app.route('/starCourseAjax/', methods=['GET', 'POST'])
+def star_course_ajax():    
+    cid = request.form.get('cid')
+    isFav = request.form.get('isFav')
+    if 'uid' in session:
+        uid = session['uid']
+        conn = getConn('c9')
+        courseBrowser.starCourse(conn, uid, cid, isFav)
+        return jsonify( {} )
+    
+    flash("Sorry, you have to log in before writing a review.")
+    return redirect(url_for('homePage'))
+
 
 #we need a main init function
 if __name__ == '__main__':

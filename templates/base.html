@@ -17,6 +17,7 @@
         <a href={{ url_for('homePage') }} class="active">Home</a>
         <a href={{ url_for('search') }}>Search</a>
         <a href={{ url_for('add_course') }}>Add A Course</a>
+        <a href={{ url_for('fav_courses') }}>My Favorite Courses</a>
         <!--<a href={{ url_for('editPosts') }}>Edit My Posts</a>-->
         <!--<a href={{ url_for('delete') }}>Delete Posts</a>-->
         <!--<a href={{ url_for('manageCourses') }}>Manage Courses</a>-->
@@ -83,11 +84,15 @@
     {% block allPosts %}
     {% endblock %}
     
+    {% block favCourses %}
+    {% endblock %}
+    
   
-  {% block scripts %}
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script src="{{url_for('static', filename ='rating.js')}}"></script>
+  {% block tail %}
   {% endblock %}
+  <script src="{{url_for('static', filename ='rating.js')}}"></script>
+
   
   </body>
 </html>

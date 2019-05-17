@@ -1,6 +1,4 @@
 {% extends "base.html" %}
-
-<body>
     
 {% block search %}
 <h3>Search by course name:</h3>
@@ -18,18 +16,18 @@
 </form>
 {% endblock %}
 
-<body>
-    
 {% block courseList %}
 <h2>Search Results</h2>
 <table id="courses-list">
     <tbody>
+        <input type="hidden" id="uid" name="uid" value="{{uid}}">
     <tr>
         <th>Class name</th>
         <th>Semester</th>
         <th>Professor</th>
         <th>Average Hours</th>
         <th>Average Rating</th>
+        <th>Favorites</th>
     </tr>
 
     {%for course in courses%}
@@ -37,12 +35,21 @@
         <td class="search_class_name"><a href = {{ url_for('createPost', cid = course.cid) }}>{{course.name}}</a></td>
         <td class="search_class_semester">{{course.semester}}</td>
         <td class="search_class_professor">{{course.professor}}</td>
-        <td class="search_class_professor">{{course.avg_hours}}</td>
-        <td class="search_class_professor">{{course.avg_rating}}</td>
+        <td class="search_class_hours">{{course.avg_hours}}</td>
+        <td class="search_class_rating">{{course.avg_rating}}</td>
+        {% if course.isFav == '1' %}
+        <td><button class="favButton" type="button">Starred!</button></td>
+        {% else %}
+        <td><button class="favButton" type="button">Star!</button></td>
+        {% endif %}
+
     </tr>
     {% endfor %}
 </table>
 {% endblock %}
 
-
-</body>
+{% block tail %}
+<script>
+    var star_url = "{{url_for('star_course_ajax')}}";
+</script>
+{% endblock %}

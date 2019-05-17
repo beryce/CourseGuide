@@ -1,5 +1,6 @@
 use c9;
 
+drop table if exists favorites;
 drop table if exists picfile;
 drop table if exists posts;  -- allows us to source the batch file more than once
 drop table if exists users;  -- allows us to source the batch file more than once
@@ -52,6 +53,17 @@ create table picfile (
     pid int primary key,
     filename varchar(50),
     foreign key (pid) references posts(pid) on delete cascade on update cascade
+)
+ENGINE = InnoDB;
+
+create table favorites (
+    uid int not null,
+    cid int not null,
+    isFav enum('0', '1'),
+    -- isFav enum('0', '1') DEFAULT '0' not null,
+    foreign key (uid) references users(uid) on update cascade on delete cascade,
+    foreign key (cid) references courses(cid) on update cascade on delete cascade,
+    primary key(uid, cid)
 )
 ENGINE = InnoDB;
 

@@ -19,7 +19,7 @@ def getCoursesWithTitle(conn, title):
     curs.execute('''select * from courses where name like %s''', ['%' + title + '%'])
     return curs.fetchall()
 
-def insertCourse(conn, professor, name, semester):
+def insertCourse(conn, professor, name, semester, uid):
     """Inserts a new course with given name and semester into course database."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     lock.acquire()
@@ -29,6 +29,16 @@ def insertCourse(conn, professor, name, semester):
     if (curs.fetchone() is None):
         curs.execute('insert into courses(name, semester, professor, avg_rating, avg_hours) values (%s, %s, %s, 0, 0) on duplicate key update name = %s, semester = %s, professor = %s', 
                 (name, semester, professor, name, semester, professor))
+        
+        # add course to favorites database
+        cid = curs.execute("select cid from courses where name='%s' and semester='%s' and professor='%s'",(name, semester, professor))
+        isFavDict = fav_course_exists(conn, uid, cid)
+        if isFavDict:
+            isFav = 1 if isFavDict('isFav') == 0 else 0
+            starCourse(conn, uid, cid, isFav)
+        else:
+            starCourse(conn, uid, cid, 0)
+        
         didInsert = True
     lock.release()
     return didInsert
@@ -180,3 +190,30 @@ def deleteCourse(conn, cid):
     lock.acquire()
     curs.execute('delete from courses where cid = %s', [cid])
     lock.release()
+    
+def get_fav_courses(conn, uid):
+    """Get a user's favorite courses given their uid"""
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute("select courses.name,courses.semester,courses.professor from favorites inner join courses on favorites.cid = courses.cid where uid=%s and isFav='1'", [uid])
+    return curs.fetchall()
+    
+def starCourse(conn, uid, cid, isFav):
+    """Get a user's favorite courses given their uid"""
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('insert into favorites(uid, cid, isFav) values (%s, %s, %s) on duplicate key update isFav=%s', (uid, cid, isFav, isFav))
+    return curs.fetchall()
+    
+def fav_course_exists(conn, uid, cid):
+    ''''check to see if user has already made a post about a given course'''
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('select isFav from favorites where uid=%s and cid=%s',(uid,cid))
+    return curs.fetchone()
+
+def add_isFav_to_Dict(conn, courses, uid):
+    for course in courses:
+        print('isfav', fav_course_exists(conn, uid, course['cid']))
+        if fav_course_exists(conn, uid, course['cid']):
+            course['isFav'] = fav_course_exists(conn, uid, course['cid'])['isFav']
+        else:
+            course['isFav'] = 0
+    return courses
