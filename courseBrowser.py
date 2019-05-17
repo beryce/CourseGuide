@@ -128,9 +128,19 @@ def rate_course(conn, uid, cid, rating, hours, comments):
     and updates the courses table'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     
-    # insert new post into the database or update it if post already exists
-    curs.execute('insert into posts(uid, cid, rating, comments, hours) values (%s, %s, %s, %s, %s) on duplicate key update uid = %s, cid = %s', [uid,cid, rating, comments, hours, uid, cid])
+    alreadyExists = post_exists(conn, uid, cid)
     
+    # insert new post into the database or update it if post already exists
+    # tried doing it with on duplicate key update, but because of the way we set
+    # up our tables, it wasn't updating correctly
+    # maybe try using a composite primary key? unsure
+    # anyway, I tried to fix it using a helper function to see if post already exists
+    if alreadyExists is not None:
+        pid = alreadyExists['pid']
+        curs.execute('update posts set rating=%s,hours=%s,comments=%s where uid=%s and cid=%s', [rating,hours,comments,uid,cid])
+    else:
+        curs.execute('insert into posts(uid, cid, rating, comments, hours) values (%s, %s, %s, %s, %s)', [uid,cid, rating, comments, hours])
+        
     # calculate the new average rating and average hours for the given class
     avg_rating = compute_avgrating(conn, cid)
     avg_hours = compute_avghours(conn, cid)
@@ -140,6 +150,12 @@ def rate_course(conn, uid, cid, rating, hours, comments):
     update_avghours(conn, cid)
     
     return {'avgrating': avg_rating, 'avghours': avg_hours}
+
+def post_exists(conn, uid, cid):
+    ''''check to see if user has already made a post about a given course'''
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    curs.execute('select * from posts where uid=%s and cid=%s',(uid,cid))
+    return curs.fetchone()
     
 def compute_avgrating(conn, cid):
     '''compute and return the new average rating for given course'''
@@ -180,7 +196,7 @@ def get_past_posts(conn, cid):
     '''Show the rating, time stamp, comments, and hours other people entered in the past 
     for a particular course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select name, entered, rating, comments, hours, filename, pid from posts inner join users where cid = %s and posts.uid = users.uid', [cid])
+    curs.execute('select name, entered, rating, comments, hours, filename, pid from posts inner join users where cid = %s and posts.uid = users.uid order by entered desc', [cid])
     return curs.fetchall()
     
 def getUserPastPosts(conn, uid):
