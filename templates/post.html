@@ -37,7 +37,7 @@
                         <input type="radio" name="stars" value="5"></label>
                         
                     <!--moved hrs input text box here -->
-                    <p><label id="hours"># of hours spent:</label> <input type="text" name="fname" value="{{ edit_post.hours }}"><br></p>
+                    <p><label for="fname"># of hours spent:</label> <input type="text" name="fname" id="fname" value="{{ edit_post.hours }}"><br></p>
                     
                     <!--moved comments input text box here -->
                     <p><label id="comments">Other comments: 
@@ -45,8 +45,14 @@
                         <textarea name="comment" rows="5" cols="30">{{ edit_post.comments }}</textarea>
                         </label>
                     </p>
-        
+                    
                     <p><input type="submit" id="rate_btn" value="Rate this!"></p>
+                </form>
+                
+                <form method="post" action={{ url_for('file_upload') }} enctype="multipart/form-data">
+                    <input type="hidden" name="pid" value={{ course.cid }}>
+                    <label for="file">Choose file: <input type="file" id="file" name="file"></label>
+                    <label for="upload">Upload: <input type="submit" id="upload" name="upload" value="upload"></label>
                 </form>
             
         </div>

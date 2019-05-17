@@ -20,12 +20,13 @@
         
         {% for course in courses %}
             <tr data-cid={{ course.cid }}>
-                <td class="search_class_name"><a href = {{ url_for('editCourse', cid = course.cid) }}>
-                    <input type="checkbox" name="deleteCourse" value={{ course.cid }}>{{ course.name }}</a></td>
-                <td class="search_class_semester">{{ course.semester }}</td>
-                <td class="search_class_professor">{{ course.professor }}</td>
-                <td class="search_class_professor">{{ course.avg_hours }}</td>
-                <td class="search_class_professor">{{ course.avg_rating }}</td>
+                
+                <td id="search_class_name" name="search_class_name"><a href = {{ url_for('editCourse', cid = course.cid) }}>
+                    <label><input type="checkbox" name="deleteCourse" value={{ course.cid }}>{{ course.name }}</a></td></label>
+                <td id="search_class_semester">{{ course.semester }}</td>
+                <td id="search_class_professor">{{ course.professor }}</td>
+                <td id="search_class_professor">{{ course.avg_hours }}</td>
+                <td id="search_class_professor">{{ course.avg_rating }}</td>
             </tr>
         {% endfor %}
     </table>

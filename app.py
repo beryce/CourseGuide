@@ -18,12 +18,12 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 app.config['UPLOADS'] = 'uploads'
 app.config['MAX_UPLOAD'] = 256000
 
-def getConn(db):
-    '''This function connects to the database. In our project, this will connect
-    to c9.'''
-    conn = MySQLdb.connect(host='localhost',user='ubuntu',passwd='',db=db)
-    conn.autocommit(True)
-    return conn
+# def getConn(db):
+#     '''This function connects to the database. In our project, this will connect
+#     to c9.'''
+#     conn = MySQLdb.connect(host='localhost',user='ubuntu',passwd='',db=db)
+#     conn.autocommit(True)
+#     return conn
 
 ''' Route for a home page and renders the home template.'''
 @app.route('/')
@@ -204,11 +204,15 @@ def rateCourse():
         conn = courseBrowser.getConn('c9')
         uid = session['uid']
         cid = request.form.get('cid')
-        rating = request.form.get('stars')
-        hours = request.form.get('fname')
+        rating = request.form.get('stars', '')
+        hours = request.form.get('fname', '')
         comments = request.form.get('comment')
-        result = courseBrowser.rate_course(conn, uid, cid, rating, hours, comments)
-        flash('The new average rating is {} and the new average hours are {}.'.format(result['avgrating'], result['avghours']))
+        
+        if rating == '' or hours == '':
+            flash("Please enter a review.")
+        else:
+            result = courseBrowser.rate_course(conn, uid, cid, rating, hours, comments)
+            flash('The new average rating is {} and the new average hours are {}.'.format(result['avgrating'], result['avghours']))
     else:
         flash('You need to login!')
     return redirect(request.referrer)
@@ -230,8 +234,6 @@ def delete():
             deleteList = request.form.getlist('coursePost')
             for cid in deleteList:
                 courseBrowser.deletePost(conn, session['uid'], cid)
-                # courseBrowser.update_avgrating(conn, cid)
-                # courseBrowser.update_avghours(conn, cid)
             postsDict = courseBrowser.getAllPosts(conn, session['uid'])
             flash('Posts successfully deleted.')
             return render_template('delete.html', rows = postsDict, loginbanner="Logged in as " + session['name'])
@@ -251,7 +253,6 @@ def manageCourses():
     """Function allows admins to delete courses."""
     conn = courseBrowser.getConn('c9')
     loginbanner = ""
-    conn = getConn('c9')
     if 'uid' in session:
         if session['isAdmin']:
             loginbanner = "Logged in as " + session['name']
@@ -270,7 +271,7 @@ def manageCourses():
 @app.route('/editCourse/<cid>', methods=['GET', 'POST'])
 def editCourse(cid):
     """Function allows admins to change the professor of a specific course."""
-    conn = getConn('c9')
+    conn = courseBrowser.getConn('c9')
     if 'uid' in session:
         if session['isAdmin']:
             loginbanner = "Logged in as " + session['name']
@@ -288,7 +289,7 @@ def editCourse(cid):
 
 @app.route('/upload/', methods=["GET", "POST"])
 def file_upload():
-    conn = getConn('c9')
+    conn = courseBrowser.getConn('c9')
     if request.method == 'GET':
         return render_template('form.html',src='',nm='')
     else:
@@ -315,7 +316,7 @@ def file_upload():
 @app.route('/pic/<path>')
 def pic(path):
     """Returns the picture associated with given pid."""
-    conn = getConn('c9')
+    conn = courseBrowser.getConn('c9')
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     return send_from_directory(app.config['UPLOADS'], path)
     # val = send_from_directory(app.config['UPLOADS'],row['filename'])
