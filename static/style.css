@@ -15,6 +15,7 @@ h2 {
     margin-top: 125px;
 }
 
+
 h3 {
     color: #3a9393;
     /*color: #284348;*/
@@ -48,6 +49,10 @@ dt {
 }
 
 .introduction {
+    text-align: center;
+}
+
+#newuser {
     text-align: center;
 }
 

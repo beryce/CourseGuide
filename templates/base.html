@@ -17,19 +17,13 @@
         <a href={{ url_for('homePage') }} class="active">Home</a>
         <a href={{ url_for('search') }}>Search</a>
         <a href={{ url_for('add_course') }}>Add A Course</a>
-        <!--<a href={{ url_for('editPosts') }}>Edit My Posts</a>-->
-        <!--<a href={{ url_for('delete') }}>Delete Posts</a>-->
-        <!--<a href={{ url_for('manageCourses') }}>Manage Courses</a>-->
-        <!--<a href="javascript:void(0);" class="icon" onclick="myFunction()">-->
-        <!--  <i class="fa fa-bars"></i>-->
-        <!--</a>-->
         <div class="dropdown">
           <button class="dropbtn">My Account</button>
           <div class="dropdown-content">
             <a href={{ url_for('editPosts') }}>Edit Posts</a>
             <a href={{ url_for('delete') }}>Delete Posts</a>
             <a href={{ url_for('manageCourses') }}>Manage Courses</a>
-            <!--<a href="">My Account</a>-->
+            <a href={{ url_for('logout') }}>Logout</a>
           </div>
         </div>
       </div>
@@ -60,10 +54,11 @@
     
     {% block loginbanner %}
       <h4>{{ loginbanner }}</h4>
-      <form name="logout" method="post" action="{{url_for('logout')}}">
-        <label><input name="logout" type="submit" id="submit2" value="logout"></label>
-      </form>
+      <!--<form name="logout" method="post" action="{{url_for('logout')}}">-->
+      <!--  <label><input name="logout" type="submit" id="submit2" value="logout"></label>-->
+      <!--</form>-->
     {% endblock %}
+    
     
     {% block search %}
     {% endblock %}
@@ -72,6 +67,9 @@
     {% endblock %}
     
     {% block addCourse %}
+    {% endblock %}
+    
+    {% block currentSearchFilters %}
     {% endblock %}
     
     {% block courseList %}

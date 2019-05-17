@@ -96,40 +96,46 @@ def getSearchResults(conn, input_search, input_semester, input_prof):
     return curs.fetchall()
     
 def rate_course(conn, uid, cid, rating, hours, comments): 
-    '''insert or update the user's rating for a course'''
+    '''insert or update the user's rating and hours for a course, then computes the new average rating and hours for a course
+    and updates the courses table'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    if post_exists(conn, uid, cid):
-        curs.execute('update posts set rating=%s,hours=%s,comments=%s where uid=%s and cid=%s',(rating,hours,comments,uid,cid))
-    else:
-        curs.execute('insert into posts(uid, cid, rating, comments, hours) values (%s, %s, %s, %s, %s)',(uid,cid,rating,comments,hours))
-    return True    
     
-def post_exists(conn, uid, cid):
-    ''''check to see if user has already made a post about a given course'''
-    curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select * from posts where uid=%s and cid=%s',(uid,cid))
-    return curs.fetchone()
+    # insert new post into the database or update it if post already exists
+    curs.execute('insert into posts(uid, cid, rating, comments, hours) values (%s, %s, %s, %s, %s) on duplicate key update uid = %s, cid = %s', [uid,cid, rating, comments, hours, uid, cid])
+    
+    # calculate the new average rating and average hours for the given class
+    avg_rating = compute_avgrating(conn, cid)
+    avg_hours = compute_avghours(conn, cid)
+    
+    # update the class in courses table with new average rating and new average hours
+    update_avgrating(conn, cid)
+    update_avghours(conn, cid)
+    
+    return {'avgrating': avg_rating, 'avghours': avg_hours}
     
 def compute_avgrating(conn, cid):
     '''compute and return the new average rating for given course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select * from (select cid, avg(rating) from posts group by cid) as t where cid=%s',(cid,))
+    # curs.execute('select * from (select cid, avg(rating) from posts group by cid) as t where cid=%s',(cid,))
+    curs.execute('select avg(rating) from (select * from posts where cid = %s) as t1', [cid])
     result = curs.fetchone()
     if result is not None:
         return result['avg(rating)']
-    else: return 0.0
-
+    else:
+        return 0.0
+        
 def update_avgrating(conn, cid):
     '''update the average rating for given course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     avgrating = compute_avgrating(conn, cid)
     curs.execute('update courses set avg_rating=%s where cid=%s',(avgrating, cid))
     return curs.fetchall()
-    
+
 def compute_avghours(conn, cid):
     '''compute and return the new average hours for given course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select * from (select cid, avg(hours) from posts group by cid) as t where cid=%s', [cid])
+    # curs.execute('select * from (select cid, avg(hours) from posts group by cid) as t where cid=%s', [cid])
+    curs.execute('select avg(hours) from (select * from posts where cid = %s) as t1', [cid])
     result = curs.fetchone()
     if result is not None:
         return result['avg(hours)']
@@ -141,6 +147,7 @@ def update_avghours(conn, cid):
     avghours = compute_avghours(conn, cid)
     curs.execute('update courses set avg_hours=%s where cid=%s',(avghours, cid))
     return curs.fetchall()
+
     
 def get_past_posts(conn, cid):
     '''Show the rating, time stamp, comments, and hours other people entered in the past 
@@ -187,3 +194,31 @@ def deleteCourse(conn, cid):
     lock.acquire()
     curs.execute('delete from courses where cid = %s', [cid])
     lock.release()
+    
+# def orderByHighestAvgRating(conn):
+#     """Returns a list of courses (specifically, their average rating and cid) 
+#     and orders them by highest to lowest average rating."""
+#     curs = conn.cursor(MySQLdb.cursors.DictCursor)
+#     curs.execute('select avg_rating, cid from courses group by cid order by avg_rating desc')
+#     return curs.fetchall()
+
+# def orderByLowestAvgRating(conn):
+#     """Returns a list of courses (specifically, their average rating and cid) 
+#     and orders them by lowest to highest average rating."""
+#     curs = conn.cursor(MySQLdb.cursors.DictCursor)
+#     curs.execute('select avg_rating, cid from courses group by cid order by avg_rating asc')
+#     return curs.fetchall()
+
+# def orderByHighestAvgHours(conn):
+#     """Returns a list of courses (specifically, their average rating and cid) 
+#     and orders them by highest to lowest average hours."""
+#     curs = conn.cursor(MySQLdb.cursors.DictCursor)
+#     curs.execute('select avg_hours, cid from courses group by cid order by avg_hours desc')
+#     return curs.fetchall()
+    
+# def orderByLowestAvgHours(conn):
+#     """Returns a list of courses (specifically, their average rating and cid) 
+#     and orders them by highest to lowest average hours."""
+#     curs = conn.cursor(MySQLdb.cursors.DictCursor)
+#     curs.execute('select avg_hours, cid from courses group by cid order by avg_hours asc')
+#     return curs.fetchall()

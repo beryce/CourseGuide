@@ -7,12 +7,6 @@ import os
 import bcrypt
 import imghdr
 
-# ''' Create a connection to the c9 database. '''
-# conn = MySQLdb.connect(host='localhost',
-#                         user='ubuntu',
-#                         passwd='',
-#                         db='c9')
-# curs = conn.cursor()
 app = Flask(__name__)
 
 app.secret_key = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
@@ -25,6 +19,8 @@ app.config['UPLOADS'] = 'uploads'
 app.config['MAX_UPLOAD'] = 256000
 
 def getConn(db):
+    '''This function connects to the database. In our project, this will connect
+    to c9.'''
     conn = MySQLdb.connect(host='localhost',user='ubuntu',passwd='',db=db)
     conn.autocommit(True)
     return conn
@@ -64,7 +60,7 @@ def login():
     # FOR NOW: global admin password == 'admin'
     isAdmin = "0"
     session['isAdmin'] = False
-    if adminPW == 'admin': # needs to be stored more securely (this will show up on view source)
+    if adminPW == 'admin': # needs to be stored more securely (this will show up on github)
     # if admin is not empty password, go look up in bcrypt (bcrypt it and compare it to something you read from a table)
     # another way--have a boolean with each person's username on whether they're the administrator
     # can put this boolean in the session to avoid having to check database
@@ -79,7 +75,7 @@ def login():
     if tryToLoginDict['response'] == 0:
         session['uid'] = tryToLoginDict['uid']
         session['name'] = tryToLoginDict['name']
-        return render_template('search.html', loginbanner = "Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
+        return render_template('search.html', loginbanner = "Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses, filterList= None)
     # incorrect pw entered
     # if the username exists in the database but the password is wrong,
     # flash a warning to the user and redirect
@@ -90,10 +86,11 @@ def login():
     # update the database by creating a new user with that login and password information
     # creating a new user with entered username and pw
     else:
-        session['uid'] = tryToLoginDict['uid']
-        session['username'] = tryToLoginDict['name']
-        session['name'] = tryToLoginDict['name']
-        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict['name']), courses=dummyCourses)
+        flash("Sorry, we don't recognize that account.")
+        # session['uid'] = tryToLoginDict['uid']
+        # session['username'] = tryToLoginDict['name']
+        # session['name'] = tryToLoginDict['name']
+        # return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict['name']), filterList = None, courses=dummyCourses)
 
     return redirect(url_for('homePage'))
 
@@ -117,7 +114,9 @@ def search():
         
     courses = courseBrowser.getSearchResults(conn, searchterm, semester, prof)
     
-    return render_template('search.html', courses=courses, loginbanner=loginbanner)
+    filterList = {'searchterm': searchterm, 'semester': semester, 'professor': prof}
+    
+    return render_template('search.html', courses=courses, loginbanner=loginbanner, filterList=filterList)
     
 @app.route('/createPost/<cid>', methods=['GET', 'POST'])
 def createPost(cid):
@@ -129,6 +128,7 @@ def createPost(cid):
     
     # check to see if this is an edit post request instead of a create post request
     isEditPostRequest = request.form.get('editPostRequest', False)
+    edit_post = {'hours': "", 'comments': ""}
     
     if not uid:
         flash("Sorry, you have to log in before writing a review.")
@@ -136,7 +136,7 @@ def createPost(cid):
     else:
         post = {}
         if isEditPostRequest:
-            post = {
+            edit_post = {
                 'hours': request.form.get('hours', ''),
                 'comments': request.form.get('comments', '') 
             }
@@ -145,7 +145,7 @@ def createPost(cid):
         pastPosts = courseBrowser.get_past_posts(conn, cid)
         if 'name' in session:
             loginbanner = "Logged in as " + session['name']
-        return render_template('post.html', course = courseInfo, rows = pastPosts, loginbanner=loginbanner, post=post)
+        return render_template('post.html', course = courseInfo, rows = pastPosts, loginbanner=loginbanner, edit_post=edit_post)
 
 @app.route('/editPosts/', methods=['GET', 'POST'])
 def editPosts():  
@@ -202,17 +202,8 @@ def rateCourse():
         rating = request.form.get('stars')
         hours = request.form.get('fname')
         comments = request.form.get('comment')
-        if courseBrowser.rate_course(conn, uid, cid, rating, hours, comments):
-            # print out new average ratings and hours
-            avg_rating = courseBrowser.compute_avgrating(conn, cid)
-            avg_hours = courseBrowser.compute_avghours(conn, cid)
-            
-            # update average ratings and hours
-            courseBrowser.update_avgrating(conn, cid)
-            courseBrowser.update_avghours(conn, cid)
-            flash('The new average rating is {} and the new average hours are {}.'.format(avg_rating, avg_hours))
-        else:
-            flash("Error")
+        result = courseBrowser.rate_course(conn, uid, cid, rating, hours, comments)
+        flash('The new average rating is {} and the new average hours are {}.'.format(result['avgrating'], result['avghours']))
     else:
         flash('You need to login!')
     return redirect(request.referrer)
@@ -324,8 +315,56 @@ def pic(path):
     return send_from_directory(app.config['UPLOADS'], path)
     # val = send_from_directory(app.config['UPLOADS'],row['filename'])
     # return val
+
+@app.route('/createAccount/')
+def createAccount():
+    """Renders template for users to create an account and join."""
+    return render_template('createAccount.html')
+
+@app.route('/join/', methods=['POST'])
+def join():
+    """Function to create a new user"""
+    conn = courseBrowser.getConn('c9')
+    username = request.form.get('username')
+    pw = request.form.get('password')
+    adminPW = request.form.get('adminPW')
+    
+    # course examples displayed after successful login
+    dummyCourses = courseBrowser.getSearchResults(conn, "", "", "")
+    
+    # FOR NOW: global admin password == 'admin'
+    isAdmin = "0"
+    session['isAdmin'] = False
+    if adminPW == 'admin':
+        isAdmin = "1"
+        session['isAdmin'] = True
+    # query the database to see if there is a matching username and password
+    if username == "" or pw == "":
+        flash("Please enter a username and password.")
+        return render_template('createAccount.html')
+    tryToLoginDict = courseBrowser.getUser(conn, username, pw, isAdmin)
+    # valid login and pw
+    if tryToLoginDict['response'] == 0:
+        flash("Sorry, that account already exists.")
+        return render_template('createAccount.html')
+    # incorrect pw entered
+    # if the username exists in the database but the password is wrong,
+    # flash a warning to the user and redirect
+    if tryToLoginDict['response'] == 1:
+        flash("Sorry, that account already exists.")
+        return render_template('createAccount.html')
+    # if the username is not in the database, then 
+    # update the database by creating a new user with that login and password information
+    # creating a new user with entered username and pw
+    else:
+        session['uid'] = tryToLoginDict['uid']
+        session['username'] = tryToLoginDict['name']
+        session['name'] = tryToLoginDict['name']
+        return render_template('search.html', loginbanner = "New user created. Logged in as " + str(tryToLoginDict['name']), filterList = None, courses=dummyCourses)
+
+    return redirect(url_for('homePage'))
     
 #we need a main init function
 if __name__ == '__main__':
     app.debug = True
-    app.run('0.0.0.0', 8081)
+    app.run('0.0.0.0', 8082)

@@ -37,10 +37,14 @@
                         <input type="radio" name="stars" value="5"></label>
                         
                     <!--moved hrs input text box here -->
-                    <p><label id="hours"># of hours spent:</label> <input type="text" name="fname" placeholder="{{post.hours}}"><br></p>
+                    <p><label id="hours"># of hours spent:</label> <input type="text" name="fname" value="{{ edit_post.hours }}"><br></p>
                     
                     <!--moved comments input text box here -->
-                    <p><label id="comments">Other comments: <br><textarea name="comment" rows="5" cols="30"  placeholder="{{post.comments}}"></textarea></label></p>
+                    <p><label id="comments">Other comments: 
+                        <br>
+                        <textarea name="comment" rows="5" cols="30">{{ edit_post.comments }}</textarea>
+                        </label>
+                    </p>
         
                     <p><input type="submit" id="rate_btn" value="Rate this!"></p>
                 </form>

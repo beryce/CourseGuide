@@ -1,36 +1,24 @@
 {% extends "base.html" %}
-    
-    
-    {% block login %}
-    <h1>Wendy's Declassified Course Survival Guide</h1>
-    <div id="index_intro">
-        <h1 class="introduction">Welcome!</h1>
 
-        <div id="login" class="introduction">
-            <h2>Log in or create an account</h2>
-            <form action="{{url_for('login')}}" method="POST">
+{% block login %}
+        <div class="create_account_form">
+            <h2>Welcome! Create an account below:</h2>
+            <form action="{{url_for('join')}}" method="POST">
               <p><label>Username:
               <input type="text" name="username" placeholder="username"></label></p>
               <p><label>Password:
               <input type="password" name="password" placeholder="password"></label></p>
               <p><label>If you are an admin logging in, enter the admin password:
               <input type="password" name="adminPW" placeholder="admin password"></label></p>
-              <button id="submit" type="submit" name="submit" value="submit">Submit</button>
+              <button id="submit" type="submit" name="submit" value="submit">Join!</button>
             </form></p>
         </div>
         
-        <div id="newuser">
-        <a href={{ url_for('createAccount') }}>New user? Join now!</a>
-      </div>
     </div>
     {% endblock %}
-        
-    {% block loginbanner %}
-    {% endblock %}
+
     
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    
-    
 
   </body>
 </html>

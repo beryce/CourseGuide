@@ -3,9 +3,10 @@
 <body>
     
 {% block search %}
-<h3>Search by course name:</h3>
+<h3>Search by:</h3>
 
 <form id="search" method=POST action="{{ url_for('search') }}">
+    <p>course name:</p>
     <input id="searchterm" placeholder="Search" name="searchterm">
     <br>
     
@@ -14,34 +15,65 @@
     
     <p>and/or filter by professor: </p>
     <input id="professor_filter" placeholder="Professor" name="professor_filter">
+    
+    <p>and/or filter by average rating:<p>
+    <select id="filter_by_rating">
+        <option value="high_to_low_rating">high to low</option>
+        <option value="low_to_high_hours">low to high</option>
+    </select>
+    
+    <p>and/or filter by average number of hours:<p>
+    <select id="filter_by_hours">
+        <option value="high_to_low_hours">high to low</option>
+        <option value="low_to_high_hours">low to high</option>
+    </select>
+    <br>
     <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
 </form>
 {% endblock %}
 
-<body>
+{% block currentSearchFilters %}
+    {% if filterList is not none %}
+        {% if filterList.searchterm == "" and filterList.professor == "" and filterList.semester == "" %}
+            <p>No filters used. Displaying all results.</p>
+        {% else %}
+            <p>Current filters used:
+            {{ filterList.searchterm }}
+            {{ filterList.semester }}
+            {{ filterList.professor }}</p>
+        {% endif %}
+    {% else %}
+        <p>Current filters used: None </p>
+    {% endif %}
+    
+{% endblock %}
     
 {% block courseList %}
-<h2>Search Results</h2>
-<table id="courses-list">
-    <tbody>
-    <tr>
-        <th>Class name</th>
-        <th>Semester</th>
-        <th>Professor</th>
-        <th>Average Hours</th>
-        <th>Average Rating</th>
-    </tr>
-
-    {%for course in courses%}
-        <tr data-cid={{course.cid}}>
-        <td class="search_class_name"><a href = {{ url_for('createPost', cid = course.cid) }}>{{course.name}}</a></td>
-        <td class="search_class_semester">{{course.semester}}</td>
-        <td class="search_class_professor">{{course.professor}}</td>
-        <td class="search_class_professor">{{course.avg_hours}}</td>
-        <td class="search_class_professor">{{course.avg_rating}}</td>
-    </tr>
-    {% endfor %}
-</table>
+    <h2>Search Results</h2>
+    {% if courses|length <= 0 %}
+        <p>Sorry, we couldn't find any courses with those filters.</p>
+    {% else %}
+        <table id="courses-list">
+            <tbody>
+            <tr>
+                <th>Class name</th>
+                <th>Semester</th>
+                <th>Professor</th>
+                <th>Average Hours</th>
+                <th>Average Rating</th>
+            </tr>
+            
+            {% for course in courses %}
+                <tr data-cid={{course.cid}}>
+                <td class="search_class_name"><a href = {{ url_for('createPost', cid = course.cid) }}>{{course.name}}</a></td>
+                <td class="search_class_semester">{{course.semester}}</td>
+                <td class="search_class_professor">{{course.professor}}</td>
+                <td class="search_class_professor">{{course.avg_hours}}</td>
+                <td class="search_class_professor">{{course.avg_rating}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
 {% endblock %}
 
 
