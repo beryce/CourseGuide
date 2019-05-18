@@ -51,13 +51,13 @@ def updateCourseProf(conn, cid, professor):
     return ret
 
 def getInfoAboutCourse(conn, cid):
-    """Gets information about a PARTICULAR couse."""
+    """Gets name, cid, semester, professor, avg rating, avg hours for a PARTICULAR couse."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('''select * from courses where courses.cid = %s''', [cid])
     return curs.fetchone()
     
 def getUser(conn, username, pw, isAdmin):
-    """Gets information about a particular user. Checks to see if the password 
+    """Gets name, uid, and hashedPW about a particular user. Checks to see if the password 
     is a match and whether or not they are an admin."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('''select * from users where name = %s''', [username])
@@ -80,7 +80,7 @@ def getUser(conn, username, pw, isAdmin):
     return userDict
     
 def createUser(conn, username, pw, isAdmin):
-    """Creates a new user."""
+    """Creates a new user using given username, password, and isAdmin."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     hashedPW = bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt())
     lock.acquire()
@@ -123,8 +123,8 @@ def rate_course(conn, uid, cid, rating, hours, comments):
     # insert new post into the database or update it if post already exists
     # tried doing it with on duplicate key update, but because of the way we set
     # up our tables, it wasn't updating correctly
-    # maybe try using a composite primary key? unsure
-    # anyway, I tried to fix it using a helper function to see if post already exists
+    # maybe try using a composite primary key?
+    # regardless, the post exist helper function is a workaround
     if alreadyExists is not None:
         pid = alreadyExists['pid']
         curs.execute('update posts set rating=%s,hours=%s,comments=%s where uid=%s and cid=%s', [rating,hours,comments,uid,cid])
@@ -229,7 +229,7 @@ def deleteCourse(conn, cid):
 def get_fav_courses(conn, uid):
     """Get a user's favorite courses given their uid"""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute("select courses.name,courses.semester,courses.professor from favorites inner join courses on favorites.cid = courses.cid where uid=%s and isFav='1'", [uid])
+    curs.execute("select courses.name, courses.cid, courses.semester,courses.professor from favorites inner join courses on favorites.cid = courses.cid where uid=%s and isFav='1'", [uid])
     return curs.fetchall()
     
 def starCourse(conn, uid, cid, isFav):
@@ -245,6 +245,7 @@ def fav_course_exists(conn, uid, cid):
     return curs.fetchone()
 
 def add_isFav_to_Dict(conn, courses, uid):
+    '''adds all of the user's favorite courses to dictionary.'''
     for course in courses:
         print('isfav', fav_course_exists(conn, uid, course['cid']))
         if fav_course_exists(conn, uid, course['cid']):
