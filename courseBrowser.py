@@ -36,13 +36,8 @@ def insertCourse(conn, professor, name, semester):
 def updateCourseProf(conn, cid, professor):
     """Updates the professor of a specific course given the cid."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    # lock.acquire()
-    print("updating course in COURSE BROWSER...")
     curs.execute('update courses set professor=%s where cid = %s', [professor, cid])
-    # lock.release()
     ret = getInfoAboutCourse(conn, cid)
-    print("UPDATED COURSE INFO")
-    print(ret)
     return ret
 
 def getInfoAboutCourse(conn, cid):
@@ -57,7 +52,6 @@ def getUser(conn, username, pw, isAdmin):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     curs.execute('''select * from users where name = %s''', [username])
     userDict = curs.fetchone()
-    print("searching for user in the database...")
     if userDict is not None:
         hashedPW = bcrypt.hashpw(pw.encode('utf-8'), userDict['hashedPW'].encode('utf-8'))
         # user and password match what is in the database
@@ -79,9 +73,10 @@ def createUser(conn, username, pw, isAdmin):
     """Creates a new user."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     hashedPW = bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt())
-    print("attempting to insert new user into the database...")
+    lock.acquire()
     curs.execute('''insert into users (name, hashedPW, isAdmin) values (%s, %s, %s)''', [username, hashedPW, isAdmin])
     curs.execute('''select * from users where name = %s''', [username])
+    lock.release()
     userDict = curs.fetchone()
     userDict['response'] = 2
     return userDict
@@ -208,8 +203,6 @@ def getAllPosts(conn, uid):
 def deletePost(conn, uid, cid):
     """Deletes a single post made by a user"""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    print("DELETING THE FOLLOWING POSTS")
-    print(cid)
     curs.execute('delete from posts where cid = %s and uid = %s', [cid, uid])
     update_avgrating(conn, cid)
     update_avghours(conn, cid)
@@ -219,9 +212,5 @@ def deleteCourse(conn, cid):
     """Deletes a single course listing and all posts associated with it. In our
     tables, we have an on delete cascade setting."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    print("DELETING THE FOLLOWING COURSES")
-    print(cid)
-    # lock.acquire()
     curs.execute('delete from courses where cid = %s', [cid])
-    # lock.release()
-    
+

@@ -222,7 +222,6 @@ def delete():
             loginbanner="Please log in."
         
         if (request.method == 'POST'):
-            print(request.form.getlist('coursePost'))
             deleteList = request.form.getlist('coursePost')
             for cid in deleteList:
                 courseBrowser.deletePost(conn, session['uid'], cid)
