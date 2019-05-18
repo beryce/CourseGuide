@@ -1,51 +1,92 @@
 {% extends "base.html" %}
     
 {% block search %}
-<h3>Search by course name:</h3>
+<h3>Search by:</h3>
 
 <form id="search" method=POST action="{{ url_for('search') }}">
-    <input id="searchterm" placeholder="Search" name="searchterm">
+    <label for="searchterm"><p>course name:</p>
+    <input id="searchterm" placeholder="Search" name="searchterm"></label>
     <br>
     
-    <p>and/or filter by semester: </p>
-    <input id="semester_filter" placeholder="Year (ex. F19 or S18)" name="semester_filter">
+    <label for="semester_filter"><p>and/or filter by semester:</p>
+    <input id="semester_filter" placeholder="Year (ex. F19 or S18)" name="semester_filter"></label>
     
-    <p>and/or filter by professor: </p>
-    <input id="professor_filter" placeholder="Professor" name="professor_filter">
+    <label for="professor_filter"><p>and/or filter by professor: </p>
+    <input id="professor_filter" placeholder="Professor" name="professor_filter"></label>
+    
+    <label for="filter_by"><p>and filter by average rating or average hours:</p>
+    <select id="filter_by" name="filter_by">
+        <option value="None" selected="selected">none</option>
+        <option value="average rating">average rating</option>
+        <option value="average hours">average hours</option>
+    </select></label>
+    
+    <label for="sort_by"><p>sort by:</p>
+    <select id="sort_by" name="sort_by">
+        <option value="None" selected="selected">none</option>
+        <option value="high to low">high to low</option>
+        <option value="low to high">low to high</option>
+    </select></label>
+    <br>
     <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
 </form>
 {% endblock %}
 
-{% block courseList %}
-<h2>Search Results</h2>
-<table id="courses-list">
-    <tbody>
-        <input type="hidden" id="uid" name="uid" value="{{uid}}">
-    <tr>
-        <th>Class name</th>
-        <th>Semester</th>
-        <th>Professor</th>
-        <th>Average Hours</th>
-        <th>Average Rating</th>
-        <th>Favorites</th>
-    </tr>
-
-    {%for course in courses%}
-        <tr data-cid={{course.cid}}>
-        <td class="search_class_name"><a href = {{ url_for('createPost', cid = course.cid) }}>{{course.name}}</a></td>
-        <td class="search_class_semester">{{course.semester}}</td>
-        <td class="search_class_professor">{{course.professor}}</td>
-        <td class="search_class_hours">{{course.avg_hours}}</td>
-        <td class="search_class_rating">{{course.avg_rating}}</td>
-        {% if course.isFav == '1' %}
-        <td><button class="favButton" type="button">Starred!</button></td>
+{% block currentSearchFilters %}
+    {% if filterList is not none %}
+        {% if filterList.searchterm == "" and filterList.professor == "" and filterList.semester == "" and filterList.rating_filter == "" and filterList.hours_filter == "" %}
+            <p>No filters used. Displaying all results.</p>
         {% else %}
-        <td><button class="favButton" type="button">Star!</button></td>
+            <p>Current filters used:
+            {{ filterList.searchterm }}
+            {{ filterList.semester }}
+            {{ filterList.professor }}
+            <br>
+            Filter results by: {{ filterList.filter_by }}
+            <br>
+            Sort by: {{ filterList.sort_by }}
+            </p>
         {% endif %}
-
-    </tr>
-    {% endfor %}
-</table>
+    {% else %}
+        <p>No filters used</p>
+    {% endif %}
+    
+{% endblock %}
+    
+{% block courseList %}
+    <h2>Search Results</h2>
+    {% if courses|length <= 0 %}
+        <p>Sorry, we couldn't find any courses with those filters.</p>
+    {% else %}
+        <table id="courses-list">
+            <tbody>
+                <input type="hidden" id="uid" name="uid" value="{{uid}}">
+            <tr>
+                <th>Class name</th>
+                <th>Semester</th>
+                <th>Professor</th>
+                <th>Average Hours</th>
+                <th>Average Rating</th>
+                <th>Favorites</th>
+            </tr>
+        
+            {%for course in courses%}
+                <tr data-cid={{course.cid}}>
+                <td class="search_class_name"><a href = {{ url_for('createPost', cid = course.cid) }}>{{course.name}}</a></td>
+                <td class="search_class_semester">{{course.semester}}</td>
+                <td class="search_class_professor">{{course.professor}}</td>
+                <td class="search_class_hours">{{course.avg_hours}}</td>
+                <td class="search_class_rating">{{course.avg_rating}}</td>
+                {% if course.isFav == '1' %}
+                <td><button class="favButton" type="button">Starred!</button></td>
+                {% else %}
+                <td><button class="favButton" type="button">Star!</button></td>
+                {% endif %}
+        
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
 {% endblock %}
 
 {% block tail %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block login %}
+        <div class="create_account_form">
+            <h2>Welcome! Create an account below:</h2>
+            <form action="{{url_for('join')}}" method="POST">
+              <p><label>Username:
+              <input type="text" name="username" placeholder="username"></label></p>
+              <p><label>Password:
+              <input type="password" name="password" placeholder="password"></label></p>
+              <p><label>If you are an admin logging in, enter the admin password:
+              <input type="password" name="adminPW" placeholder="admin password"></label></p>
+              <button id="submit" type="submit" name="submit" value="submit">Join!</button>
+            </form></p>
+        </div>
+        
+    </div>
+    {% endblock %}
+
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+  </body>
+</html>

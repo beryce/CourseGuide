@@ -31,10 +31,10 @@ def insertCourse(conn, professor, name, semester, uid):
                 (name, semester, professor, name, semester, professor))
         
         # add course to favorites database
-        cid = curs.execute("select cid from courses where name='%s' and semester='%s' and professor='%s'",(name, semester, professor))
+        cid = curs.execute('select cid from courses where name=%s and semester=%s and professor=%s',(name, semester, professor))
         isFavDict = fav_course_exists(conn, uid, cid)
         if isFavDict:
-            isFav = 1 if isFavDict('isFav') == 0 else 0
+            isFav = 1 if isFavDict['isFav'] == 0 else 0
             starCourse(conn, uid, cid, isFav)
         else:
             starCourse(conn, uid, cid, 0)
@@ -46,10 +46,10 @@ def insertCourse(conn, professor, name, semester, uid):
 def updateCourseProf(conn, cid, professor):
     """Updates the professor of a specific course given the cid."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    lock.acquire()
+    # lock.acquire()
     print("updating course in COURSE BROWSER...")
     curs.execute('update courses set professor=%s where cid = %s', [professor, cid])
-    lock.release()
+    # lock.release()
     ret = getInfoAboutCourse(conn, cid)
     print("UPDATED COURSE INFO")
     print(ret)
@@ -57,9 +57,7 @@ def updateCourseProf(conn, cid, professor):
 
 def getInfoAboutCourse(conn, cid):
     """Gets information about a PARTICULAR couse."""
-    #BUG: NEED TO INNER JOIN WITH POSTS BUT POSTS IS BEING WEIRD
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    # curs.execute('''select * from courses where cid = %s''', [cid])
     curs.execute('''select * from courses where courses.cid = %s''', [cid])
     return curs.fetchone()
     
@@ -84,17 +82,21 @@ def getUser(conn, username, pw, isAdmin):
         return userDict
     # username does not exist in the database, create new user
     else:
-        hashedPW = bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt())
-        print("attempting to insert new user into the database...")
-        lock.acquire()
-        curs.execute('''insert into users (name, hashedPW, isAdmin) values (%s, %s, %s)''', [username, hashedPW, isAdmin])
-        lock.release()
-        curs.execute('''select * from users where name = %s''', [username])
-        userDict = curs.fetchone()
-        userDict['response'] = 2
+        return {"response": 2}
+    return userDict
+    
+def createUser(conn, username, pw, isAdmin):
+    """Creates a new user."""
+    curs = conn.cursor(MySQLdb.cursors.DictCursor)
+    hashedPW = bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt())
+    print("attempting to insert new user into the database...")
+    curs.execute('''insert into users (name, hashedPW, isAdmin) values (%s, %s, %s)''', [username, hashedPW, isAdmin])
+    curs.execute('''select * from users where name = %s''', [username])
+    userDict = curs.fetchone()
+    userDict['response'] = 2
     return userDict
 
-def getSearchResults(conn, input_search, input_semester, input_prof):
+def getSearchResults(conn, input_search, input_semester, input_prof, filter_by, sort_by):
     """Returns the name, cid, semester for the given course name user types into search bar.
     For example, if the user types in "cs", the result will be all classes where
     there is a "cs" in the course name. """
@@ -102,18 +104,48 @@ def getSearchResults(conn, input_search, input_semester, input_prof):
     name = '%' + input_search + '%'
     sem = '%' + input_semester + '%'
     prof = '%' + input_prof + '%'
-    curs.execute('select name, cid, semester, professor, avg_hours, avg_rating from courses where name like %s and semester like %s and professor like %s', [name, sem, prof])
+    
+    if filter_by == "average rating":
+        if sort_by == "low to high":
+            curs.execute('select name, cid, semester, professor, avg_hours, avg_rating from courses where name like %s and semester like %s and professor like %s group by cid order by avg_rating asc', [name, sem, prof])
+        else:
+            curs.execute('select name, cid, semester, professor, avg_hours, avg_rating from courses where name like %s and semester like %s and professor like %s group by cid order by avg_rating desc', [name, sem, prof])
+    else:
+        if sort_by == "low to high":
+            curs.execute('select name, cid, semester, professor, avg_hours, avg_rating from courses where name like %s and semester like %s and professor like %s group by cid order by avg_hours asc', [name, sem, prof])
+        else:
+            curs.execute('select name, cid, semester, professor, avg_hours, avg_rating from courses where name like %s and semester like %s and professor like %s group by cid order by avg_hours desc', [name, sem, prof])
+    
     return curs.fetchall()
     
 def rate_course(conn, uid, cid, rating, hours, comments): 
-    '''insert or update the user's rating for a course'''
+    '''insert or update the user's rating and hours for a course, then computes the new average rating and hours for a course
+    and updates the courses table'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    if post_exists(conn, uid, cid):
-        curs.execute('update posts set rating=%s,hours=%s,comments=%s where uid=%s and cid=%s',(rating,hours,comments,uid,cid))
-    else:
-        curs.execute('insert into posts(uid, cid, rating, comments, hours) values (%s, %s, %s, %s, %s)',(uid,cid,rating,comments,hours))
-    return True    
     
+    alreadyExists = post_exists(conn, uid, cid)
+    
+    # insert new post into the database or update it if post already exists
+    # tried doing it with on duplicate key update, but because of the way we set
+    # up our tables, it wasn't updating correctly
+    # maybe try using a composite primary key? unsure
+    # anyway, I tried to fix it using a helper function to see if post already exists
+    if alreadyExists is not None:
+        pid = alreadyExists['pid']
+        curs.execute('update posts set rating=%s,hours=%s,comments=%s where uid=%s and cid=%s', [rating,hours,comments,uid,cid])
+    else:
+        curs.execute('insert into posts(uid, cid, rating, comments, hours) values (%s, %s, %s, %s, %s)', [uid,cid, rating, comments, hours])
+        
+    # calculate the new average rating and average hours for the given class
+    avg_rating = compute_avgrating(conn, cid)
+    avg_hours = compute_avghours(conn, cid)
+    
+    # update the class in courses table with new average rating and new average hours
+    update_avgrating(conn, cid)
+    update_avghours(conn, cid)
+    
+    return {'avgrating': avg_rating, 'avghours': avg_hours}
+
 def post_exists(conn, uid, cid):
     ''''check to see if user has already made a post about a given course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
@@ -123,21 +155,30 @@ def post_exists(conn, uid, cid):
 def compute_avgrating(conn, cid):
     '''compute and return the new average rating for given course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select * from (select cid, avg(rating) from posts group by cid) as t where cid=%s',(cid,))
-    return curs.fetchone()['avg(rating)']
-
+    # curs.execute('select * from (select cid, avg(rating) from posts group by cid) as t where cid=%s',(cid,))
+    curs.execute('select avg(rating) from (select * from posts where cid = %s) as t1', [cid])
+    result = curs.fetchone()
+    if result is not None:
+        return result['avg(rating)']
+    else:
+        return 0.0
+        
 def update_avgrating(conn, cid):
     '''update the average rating for given course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     avgrating = compute_avgrating(conn, cid)
     curs.execute('update courses set avg_rating=%s where cid=%s',(avgrating, cid))
     return curs.fetchall()
-    
+
 def compute_avghours(conn, cid):
     '''compute and return the new average hours for given course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select * from (select cid, avg(hours) from posts group by cid) as t where cid=%s', [cid])
-    return curs.fetchone()['avg(hours)']
+    # curs.execute('select * from (select cid, avg(hours) from posts group by cid) as t where cid=%s', [cid])
+    curs.execute('select avg(hours) from (select * from posts where cid = %s) as t1', [cid])
+    result = curs.fetchone()
+    if result is not None:
+        return result['avg(hours)']
+    else: return 0.0
     
 def update_avghours(conn, cid):
     '''update the average hours for given course'''
@@ -150,18 +191,19 @@ def get_past_posts(conn, cid):
     '''Show the rating, time stamp, comments, and hours other people entered in the past 
     for a particular course'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select name, entered, rating, comments, hours from posts inner join users where cid = %s and posts.uid = users.uid', [cid])
+    curs.execute('select name, entered, rating, comments, hours, filename, pid from posts inner join users where cid = %s and posts.uid = users.uid order by entered desc', [cid])
     return curs.fetchall()
     
 def getUserPastPosts(conn, uid):
     '''Return a list of a given users previous posts'''
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select pid, posts.cid as courseId, usrs.name, entered, rating, comments, hours, cs.name as cName from posts inner join users as usrs inner join courses as cs where posts.uid = %s and posts.uid = usrs.uid and posts.cid = cs.cid', [uid])
+    curs.execute('select pid, posts.cid as courseId, usrs.name, entered, rating, comments, filename, hours, cs.name as cName from posts inner join users as usrs inner join courses as cs where posts.uid = %s and posts.uid = usrs.uid and posts.cid = cs.cid', [uid])
     return curs.fetchall()
 
 def insertFile(conn, pid, filename):
+    """Inserts a file into posts database using given file name."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('''insert into picfile(pid,filename) values (%s,%s)
+    curs.execute('''insert into posts(pid,filename) values (%s,%s)
                 on duplicate key update filename = %s''',
                 [pid, filename, filename])
                 
@@ -169,7 +211,7 @@ def insertFile(conn, pid, filename):
 def getAllPosts(conn, uid):
     """Returns all posts for a given uid"""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
-    curs.execute('select courses.name, posts.cid, posts.hours, posts.rating, posts.entered, posts.comments from posts inner join courses on posts.cid = courses.cid where posts.uid = %s order by hours desc', (uid,))
+    curs.execute('select courses.name, posts.cid, posts.hours, posts.rating, posts.entered, posts.comments, posts.filename from posts inner join courses on posts.cid = courses.cid where posts.uid = %s order by hours desc', (uid,))
     postsDict = curs.fetchall()
     return postsDict
     
@@ -178,18 +220,18 @@ def deletePost(conn, uid, cid):
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     print("DELETING THE FOLLOWING POSTS")
     print(cid)
-    lock.acquire()
     curs.execute('delete from posts where cid = %s and uid = %s', [cid, uid])
-    lock.release()
+    update_avgrating(conn, cid)
+    update_avghours(conn, cid)
+    
     
 def deleteCourse(conn, cid):
-    """Deletes a single course listing and all posts associated with it"""
+    """Deletes a single course listing and all posts associated with it. In our
+    tables, we have an on delete cascade setting."""
     curs = conn.cursor(MySQLdb.cursors.DictCursor)
     print("DELETING THE FOLLOWING COURSES")
     print(cid)
-    lock.acquire()
     curs.execute('delete from courses where cid = %s', [cid])
-    lock.release()
     
 def get_fav_courses(conn, uid):
     """Get a user's favorite courses given their uid"""

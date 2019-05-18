@@ -37,7 +37,7 @@ CREATE TABLE posts (
     uid int not null,
     cid int not null,
     
-    INDEX (uid),     -- necessary for referential integrity checking
+    INDEX (uid, cid),     -- necessary for referential integrity checking
     foreign key (uid) references users(uid)
         on update cascade
         on delete cascade,
@@ -49,12 +49,12 @@ CREATE TABLE posts (
 )
 ENGINE = InnoDB;
 
-create table picfile (
-    pid int primary key,
-    filename varchar(50),
-    foreign key (pid) references posts(pid) on delete cascade on update cascade
-)
-ENGINE = InnoDB;
+-- create table picfile (
+--     pid int primary key,
+--     filename varchar(50),
+--     foreign key (pid) references posts(pid) on delete cascade on update cascade
+-- )
+-- ENGINE = InnoDB;
 
 create table favorites (
     uid int not null,

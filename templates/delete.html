@@ -8,14 +8,15 @@
     
     {% block past_posts %}
     <dl>
-        <form action="/delete" method="post">
+        <form action="{{ url_for('delete') }}" method="post">
         {% for row in rows %}
             <br>
-                <input type="checkbox" name="coursePost" value={{row.cid}}> Post for {{row.name}} on {{row.entered}}
+                <label><input type="checkbox" name="coursePost" value={{ row.cid }}> Post for {{ row.name }} on {{ row.entered }}</label>
                 <dd>
-                    <li>Rating: {{row.rating}}</li>
-                    <li>Hours spent: {{row.hours}}</li>
-                    <li>Comment: {{row.comments}}</li>
+                    <li>Rating: {{ row.rating }}</li>
+                    <li>Hours spent: {{ row.hours }}</li>
+                    <li>Comment: {{ row.comments }}</li>
+                    <li>Files: {{ row.filename }}</li>
                 </dd>
         {% endfor %}
         <br><input type="submit" value="Submit">

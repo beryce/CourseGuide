@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 
-<body>
 {% block allPosts %}
 <h2>Previous Posts</h2>
 <table id="past-posts">
@@ -10,30 +9,33 @@
         <th>Rating</th>
         <th>Hours Spent</th>
         <th>Comment</th>
+        <th>Files</th>
         <th>Edit Post</th>
         <th>Upload file</th>
     </tr>
 
-    {%for post in posts%}
-        <tr post-pid={{post.pid}}>
+    {% for post in posts %}
+        <tr post-pid={{ post.pid }}>
         <!--<td class="name">{{post.name}} at {{post.entered}}</td>-->
         <!--<td class="course_id">{{post.courseId}}</td>-->
-        <td class="course_name">{{post.cName}}</td>
-        <td class="rating">{{post.rating}}</td>
-        <td class="hours">{{post.hours}}</td>
-        <td class="comments">{{post.comments}}</td>
+        <td class="course_name"><a href = {{ url_for('createPost', cid = post.courseId) }}>{{ post.cName }}</td>
+        <td class="rating">{{ post.rating }}</td>
+        <td class="hours">{{ post.hours }}</td>
+        <td class="comments">{{ post.comments }}</td>
+        <td class="files">{{ post.filename }}</td>
         <td><form method="post" action="{{url_for('createPost', cid=post.courseId)}}" >
-            <input type="hidden" name="editPostRequest" value="True">
-            <input type="hidden" name="rating" value="{{post.rating}}">
-            <input type="hidden" name="hours" value="{{post.hours}}">
-            <input type="hidden" name="comments" value="{{post.comments}}">
-            <input type="submit" value="edit this">
+            <input type="hidden" id="editPostRequest" name="editPostRequest" value="True">
+            <input type="hidden" name="rating" value="{{ post.rating }}">
+            <input type="hidden" id="hours" name="hours" value="{{ post.hours }}">
+            <input type="hidden" id="comments" name="comments" value="{{ post.comments }}">
+            <label>Edit:<input type="submit" name="edit" id="edit" value="edit this"></label>
             </form>
         </td>
         <td><form method="post" action={{ url_for('file_upload') }} enctype="multipart/form-data">
-            <input type="hidden" name="pid" value="{{post.pid}}">
-            <label for="file"><input type="file" name="file"></label>
-            <input type="submit" value="upload">
+                <input type="hidden" name="pid" value="{{ post.pid }}">
+                <label>Choose file:
+                <input type="file" id="file" name="file"></label>
+                <label>Upload: <input type="submit" name="upload" id="upload" value="upload"></label>
             </form>
         </td>
     </tr>

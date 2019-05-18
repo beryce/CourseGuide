@@ -20,39 +20,39 @@
                 <form id="rating" method="post" action="{{url_for('rateCourse')}}">
                     <p>How would you rate this class on a scale of 1 (poor) to 5 (excellent)?</p>
                     <input type="hidden" name="cid" value={{ course.cid }}>
-                    <input type="hidden" name="uid" value={{ post.uid }}>
+                    <input type="hidden" name="uid" value={{ edit_post.uid }}>
                     
-                    <p>Course rating: {{post.rating}}</p>
+                    <p>Course rating: {{edit_post.rating}}</p>
                     <label class="class-rating">1
-                    {% if post.rating == '1' %}
+                    {% if edit_post.rating == '1' %}
                         <input type="radio" name="stars" value="1" checked="checked"></label>
                     {% else %}
                         <input type="radio" name="stars" value="1"></label>
                     {% endif %}
                     
                     <label class="class-rating">2
-                    {% if post.rating == '2' %}
+                    {% if edit_post == '2' %}
                         <input type="radio" name="stars" value="2" checked="checked"></label>
                     {% else %}
                         <input type="radio" name="stars" value="2"></label>
                     {% endif %}
                     
                     <label class="class-rating">3
-                    {% if post.rating == '3' %}
+                    {% if edit_post == '3' %}
                         <input type="radio" name="stars" value="3" checked="checked"></label>
                     {% else %}
                         <input type="radio" name="stars" value="3"></label>
                     {% endif %}
                     
                     <label class="class-rating">4
-                    {% if post.rating == '4' %}
+                    {% if edit_post == '4' %}
                         <input type="radio" name="stars" value="4" checked="checked"></label>
                     {% else %}
                         <input type="radio" name="stars" value="4"></label>
                     {% endif %}
                     
                     <label class="class-rating">5
-                    {% if post.rating == '5' %}
+                    {% if edit_post == '5' %}
                         <input type="radio" name="stars" value="5" checked="checked"></label>
                     {% else %}
                         <input type="radio" name="stars" value="5"></label>
@@ -60,14 +60,19 @@
                     
             </td>
                     <!--moved hrs input text box here -->
-                    <p><label id="hours"># of hours spent:</label> <input type="text" name="fname" value="{{post.hours}}"><br></p>
+                    <p><label for="fname"># of hours spent:</label> <input type="text" name="fname" id="fname" value="{{ edit_post.hours }}"><br></p>
                     
                     <!--moved comments input text box here -->
-                    <p><label id="comments">Other comments: <br><textarea name="comment" rows="5" cols="30">{{post.comments}}</textarea></label></p>
-        
+                    <p><label id="comments">Other comments: 
+                        <br>
+                        <textarea name="comment" rows="5" cols="30">{{ edit_post.comments }}</textarea>
+                        </label>
+                    </p>
+                    
                     <p><input type="submit" id="rate_btn" value="Rate this!"></p>
                 </form>
-            </td>
+                
+                <p>To upload a file, please fill out the rate form, click submit, then visit <a href={{ url_for('editPosts') }}>the edit tab</a>.</p>
             
         </div>
     
@@ -79,11 +84,17 @@
     {% block past_posts %}
     <dl>
         {% for row in rows %}
-            <dt>{{row.name}} at {{row.entered}}</dt>
+            <dt>{{row.name}} at {{ row.entered }}</dt>
             <dd>
-                <li>Rating: {{row.rating}}</li>
-                <li>Hours spent: {{row.hours}}</li>
-                <li>Comment: {{row.comments}}</li>
+                <li>Rating: {{ row.rating }}</li>
+                <li>Hours spent: {{ row.hours }}</li>
+                <li>Comment: {{ row.comments }}</li>
+                {% if row.filename is none %}
+                    <li>Files: None</li>
+                {% else %}
+                    <!--<li>Other: <img src="{{ url_for('pic',path=row['filename']) }}" width="50" height="60"></li>-->
+                    <li>Files: <a href="{{ url_for('pic',path=row['filename']) }}">{{ row.filename }}</a></li>
+                {% endif %}
             </dd>
             <br>
         {% endfor %}

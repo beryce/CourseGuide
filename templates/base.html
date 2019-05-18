@@ -4,7 +4,7 @@
       <meta charset='utf-8'>
       <meta name=author content="Jennifer Chien, Ngina Kariuki, Beryce Garcia">
       {% block title %}
-      <title>Wendy’s Course Survival Guide</title>
+        <title>Wendy’s Course Survival Guide</title>
       {% endblock %}
       <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}">
   </head>
@@ -18,19 +18,13 @@
         <a href={{ url_for('search') }}>Search</a>
         <a href={{ url_for('add_course') }}>Add A Course</a>
         <a href={{ url_for('fav_courses') }}>My Favorite Courses</a>
-        <!--<a href={{ url_for('editPosts') }}>Edit My Posts</a>-->
-        <!--<a href={{ url_for('delete') }}>Delete Posts</a>-->
-        <!--<a href={{ url_for('manageCourses') }}>Manage Courses</a>-->
-        <!--<a href="javascript:void(0);" class="icon" onclick="myFunction()">-->
-        <!--  <i class="fa fa-bars"></i>-->
-        <!--</a>-->
         <div class="dropdown">
           <button class="dropbtn">My Account</button>
           <div class="dropdown-content">
             <a href={{ url_for('editPosts') }}>Edit Posts</a>
             <a href={{ url_for('delete') }}>Delete Posts</a>
             <a href={{ url_for('manageCourses') }}>Manage Courses</a>
-            <!--<a href="">My Account</a>-->
+            <a href={{ url_for('logout') }}>Logout</a>
           </div>
         </div>
       </div>
@@ -56,12 +50,18 @@
     {% block links %}
     {% endblock %}
     
+    {% block loginbanner %}
+      <h4>{{ loginbanner }}</h4>
+      <!--<form name="logout" method="post" action="{{url_for('logout')}}">-->
+      <!--  <label><input name="logout" type="submit" id="submit2" value="logout"></label>-->
+      <!--</form>-->
+    {% endblock %}
+    
     {% block login %}
     {% endblock %}
     
-    {% block loginbanner %}
-      <h4>{{ loginbanner }}</h4>
-    {% endblock %}
+    
+    
     
     {% block search %}
     {% endblock %}
@@ -70,6 +70,9 @@
     {% endblock %}
     
     {% block addCourse %}
+    {% endblock %}
+    
+    {% block currentSearchFilters %}
     {% endblock %}
     
     {% block courseList %}
